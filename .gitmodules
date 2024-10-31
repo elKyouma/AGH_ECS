@@ -1,0 +1,6 @@
+[submodule "SDL"]
+	path = Dependency/SDL
+	url = https://github.com/libsdl-org/SDL
+[submodule "googletest"]
+	path = Dependency/googletest
+	url = https://github.com/google/googletest
