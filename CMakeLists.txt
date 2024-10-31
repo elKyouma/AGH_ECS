@@ -15,7 +15,7 @@ option(MYGAME_VENDORED "Use vendored libraries" OFF)
 
 if(MYGAME_VENDORED)
     # This assumes you have added SDL as a submodule in vendored/SDL
-    add_subdirectory(vendored/SDL EXCLUDE_FROM_ALL)
+    add_subdirectory(Dependency/SDL EXCLUDE_FROM_ALL)
 else()
     # 1. Look for a SDL3 package,
     # 2. look for the SDL3-shared component, and
