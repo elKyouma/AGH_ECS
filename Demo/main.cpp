@@ -1,36 +1,56 @@
-#include <stdio.h>
 #include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
+#include <string>
 
-int main()
+int main(int argc, char* argv[])
 {
+	SDL_Window* window;
+	SDL_Renderer* renderer;
+	SDL_Surface* surface;
+	SDL_Texture* texture;
+	SDL_Event event;
 
-    SDL_Window *window;                    // Declare a pointer
+	if (!SDL_Init(SDL_INIT_VIDEO)) {
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
+		return 3;
+	}
 
-    SDL_Init(SDL_INIT_VIDEO);              // Initialize SDL3
+	if (!SDL_CreateWindowAndRenderer("Hello SDL", 320, 240, SDL_WINDOW_RESIZABLE, &window, &renderer)) {
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window and renderer: %s", SDL_GetError());
+		return 3;
+	}
 
-    // Create an application window with the following settings:
-    window = SDL_CreateWindow(
-        "An SDL3 window",                  // window title
-        640,                               // width, in pixels
-        480,                               // height, in pixels
-        SDL_WINDOW_OPENGL                  // flags - see below
-    );
+	std::string path = ART_PATH;
+	path += "gandalf.jpg";
+	surface = IMG_Load(path.c_str());
 
-    // Check that the window was successfully created
-    if (window == NULL) {
-        // In the case that the window could not be made...
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Could not create window: %s\n", SDL_GetError());
-        return 1;
-    }
+	if (!surface) {
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create surface from image: %s", SDL_GetError());
+		return 3;
+	}
+	texture = SDL_CreateTextureFromSurface(renderer, surface);
+	if (!texture) {
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create texture from surface: %s", SDL_GetError());
+		return 3;
+	}
+	SDL_DestroySurface(surface);
 
-    // The window is open: could enter program loop here (see SDL_PollEvent())
+	while (1) {
+		SDL_PollEvent(&event);
+		if (event.type == SDL_EVENT_QUIT) {
+			break;
+		}
+		SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0x00);
+		SDL_RenderClear(renderer);
+		SDL_RenderTexture(renderer, texture, NULL, NULL);
+		SDL_RenderPresent(renderer);
+	}
 
-    SDL_Delay(10000);  // Pause execution for 3000 milliseconds, for example
+	SDL_DestroyTexture(texture);
+	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(window);
 
-    // Close and destroy the window
-    SDL_DestroyWindow(window);
+	SDL_Quit();
 
-    // Clean up
-    SDL_Quit();
-    return 0;
+	return 0;
 }
