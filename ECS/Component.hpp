@@ -8,6 +8,7 @@
 class IComponentPool
 {
 public:
+    virtual bool TryDeleteComponent(const EntityId) = 0;
     virtual ~IComponentPool();
 };
 
@@ -27,12 +28,13 @@ public:
             availableIds.push(id);
     }
 
-    void AddComponent(const EntityId entity)
+    Component& AddComponent(const EntityId entity)
     {
         assert(entityToComponentId.find(entity) == entityToComponentId.end());
 
         entityToComponentId[entity] = availableIds.top();
         availableIds.pop();
+        return entityToComponentId[entity];
     }
     
     Component& GetComponent(const EntityId entity) override
@@ -45,6 +47,17 @@ public:
     { 
         assert(components.find(entity) == components.end());
          return components[entity];   
+    }
+
+    bool TryDeleteComponent(const EntityId entity) override
+    {
+        if(entityToComponentId.find(entity) == entityToComponentId.end())
+            return false;
+
+        availableIds.push(entity);
+        entityToComponentId.erase(entity);
+
+        return true;
     }
 
     void DeleteComponent(const EntityId entity)
