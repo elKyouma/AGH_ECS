@@ -1,8 +1,8 @@
-#include <bitset>
-#include "Component.hpp"
+#pragma once
+#include "Types.hpp"
 
 class System
 {
 public:
-    std::bitset<MAX_COMPONENT_COUNT> requiredComponents;
+    Signature requiredComponents;
 };
