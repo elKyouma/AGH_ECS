@@ -1,4 +1,5 @@
 set(SDL_TEST OFF)
+set(SDLIMAGE_VENDORED OFF)
 
 add_subdirectory(SDL EXCLUDE_FROM_ALL)
 add_subdirectory(googletest EXCLUDE_FROM_ALL)
