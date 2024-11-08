@@ -1,7 +1,5 @@
 #pragma once
 #include <array>
-#include <cassert>
-#include <functional>
 #include <optional>
 #include <stack>
 #include <unordered_map>
@@ -32,23 +30,25 @@ public:
 
     Component& AddComponent(const EntityId entity)
     {
-        assert(entityToComponentId.find(entity) == entityToComponentId.end());
+        ASSERT(entityToComponentId.find(entity) == entityToComponentId.end());
 
         entityToComponentId[entity] = availableIds.top();
         availableIds.pop();
-        return entityToComponentId[entity];
+        return components[entityToComponentId[entity]];
     }
     
     Component& GetComponent(const EntityId entity)
     {
-        assert(components.find(entity) == components.end());
-        return components[entity];   
+        ComponentId compId = entityToComponentId[entity];
+        ASSERT(components.find(compId) == components.end());
+        return components[compId];   
     }
     
     const Component& GetComponent(const EntityId entity) const
     { 
-        assert(components.find(entity) == components.end());
-         return components[entity];   
+        ComponentId compId = entityToComponentId.at(entity);
+        ASSERT(components.find(compId) == components.end());
+         return components[compId];   
     }
     
     std::optional<std::reference_wrapper<Component>> TryGetComponent(const EntityId entity)
@@ -81,7 +81,7 @@ public:
 
     void DeleteComponent(const EntityId entity)
     {
-        assert(entityToComponentId.find(entity) != entityToComponentId.end());
+        ASSERT(entityToComponentId.find(entity) != entityToComponentId.end());
         availableIds.push(entity);
         entityToComponentId.erase(entity);
     }

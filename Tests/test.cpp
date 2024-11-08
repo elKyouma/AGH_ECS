@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
-#include "../ECS/Component.hpp"
-
+#include "Component.hpp"
 class ComponentPoolTest : public testing::Test
 {
   protected:
@@ -10,10 +9,10 @@ class ComponentPoolTest : public testing::Test
     double x;
     double y;
   };
-  ComponentPool<Position> comP;
 };
 
 TEST_F(ComponentPoolTest, AddingComponent) {
-  ASSERT_TRUE(true);
-  
+  ComponentPool<Position> comP;
+  comP.AddComponent(0);
+  EXPECT_ANY_THROW(comP.AddComponent(0));
 }
