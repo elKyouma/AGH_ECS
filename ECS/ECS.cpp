@@ -92,7 +92,7 @@ public:
     }
 
 private:
-    std::array<std::unique_ptr<IComponentPool>, MAX_ENTITY_COUNT> components;
+    std::array<std::unique_ptr<IComponentPool>, MAX_COMPONENT_COUNT> components;
     std::stack<EntityId> availableEntityIds;
     std::unordered_map<std::type_index, ComponentPoolId> typeToId;
     std::array<Signature, MAX_ENTITY_COUNT> signatures;
