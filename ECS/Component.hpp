@@ -9,7 +9,7 @@ class IComponentPool
 {
 public:
     virtual bool TryDeleteComponent(const EntityId) = 0;
-    virtual ~IComponentPool() {}
+    virtual ~IComponentPool() {};
 };
 
 template <typename Component>

@@ -5,9 +5,6 @@
 
 class System
 {
-private:
-    virtual void SetSystemSignature() = 0;
-
 public:
     void Init(std::array<Signature, MAX_ENTITY_COUNT>& signatures)
     {
@@ -17,6 +14,10 @@ public:
             if((systemSignature.to_ulong() & signatures[id].to_ulong()) == systemSignature.to_ulong())
                 entities.emplace(id);
     }
+
+    //TODO: Think about making update protected, and befriending ECS
+
+    virtual void Update() =0;
 
     void OnEntityDestroyed(const EntityId entity)
     {
