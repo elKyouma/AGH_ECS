@@ -1,6 +1,8 @@
 #pragma once
 #include <array>
 #include <cassert>
+#include <functional>
+#include <optional>
 #include <stack>
 #include <unordered_map>
 #include "Types.hpp"
@@ -48,6 +50,23 @@ public:
         assert(components.find(entity) == components.end());
          return components[entity];   
     }
+    
+    std::optional<std::reference_wrapper<Component>> TryGetComponent(const EntityId entity)
+    {
+        if(entityToComponentId.find(entity) != components.end())
+            return {components[entity]};
+        else
+            return {};
+    }
+    
+    std::optional<std::reference_wrapper<const Component>> TryGetComponent(const EntityId entity) const
+    { 
+        if(entityToComponentId.find(entity) != components.end())
+            return {components[entity]};
+        else
+            return {};
+    }
+
 
     bool TryDeleteComponent(const EntityId entity) override
     {
