@@ -12,6 +12,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_BINARY_DIR})
 add_subdirectory(ECS EXCLUDE_FROM_ALL)
 add_subdirectory(Dependency EXCLUDE_FROM_ALL)
 add_subdirectory(Demo)
+enable_testing()
 add_subdirectory(Tests)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)

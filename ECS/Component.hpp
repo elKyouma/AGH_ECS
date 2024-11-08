@@ -9,7 +9,7 @@ class IComponentPool
 {
 public:
     virtual bool TryDeleteComponent(const EntityId) = 0;
-    virtual ~IComponentPool();
+    virtual ~IComponentPool() {}
 };
 
 template <typename Component>
@@ -37,13 +37,13 @@ public:
         return entityToComponentId[entity];
     }
     
-    Component& GetComponent(const EntityId entity) override
+    Component& GetComponent(const EntityId entity)
     {
         assert(components.find(entity) == components.end());
         return components[entity];   
     }
     
-    const Component& GetComponent(const EntityId entity) const override
+    const Component& GetComponent(const EntityId entity) const
     { 
         assert(components.find(entity) == components.end());
          return components[entity];   

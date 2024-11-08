@@ -1,9 +1,19 @@
 #include <gtest/gtest.h>
+#include "../ECS/Component.hpp"
 
-// Demonstrate some basic assertions.
-TEST(HelloTest, BasicAssertions) {
-  // Expect two strings not to be equal.
-  EXPECT_STRNE("hello", "world");
-  // Expect equality.
-  EXPECT_EQ(7 * 6, 42);
+class ComponentPoolTest : public testing::Test
+{
+  protected:
+
+  struct Position
+  {
+    double x;
+    double y;
+  };
+  ComponentPool<Position> comP;
+};
+
+TEST_F(ComponentPoolTest, AddingComponent) {
+  ASSERT_TRUE(true);
+  
 }
