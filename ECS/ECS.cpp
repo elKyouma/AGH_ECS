@@ -1,5 +1,6 @@
 #include "Types.hpp"
 #include "Component.hpp"
+#include <cassert>
 #include <memory>
 #include <stack>
 #include <typeindex>
@@ -51,6 +52,7 @@ public:
     template <typename Component>
     Component& GetComponent(const EntityId entity)
     {
+        assert(signatures[entity].test(typeToId[std::type_index(typeid(Component))]));
         auto comp = GetComponentPool<Component>();
         return comp->GetComponent(entity);
     }
@@ -58,6 +60,7 @@ public:
     template <typename Component>
     const Component& GetComponent(const EntityId entity) const
     {
+        assert(signatures.at(entity).test(typeToId.at(std::type_index(typeid(Component)))));
         const auto comp = GetComponentPool<Component>(); 
         return comp->GetComponent(entity);
     }
@@ -65,14 +68,18 @@ public:
     template <typename Component>
     Component& AddComponent(const EntityId entity)
     {
+        assert(!signatures.at(entity).test(typeToId.at(std::type_index(typeid(Component)))));
         auto comp = GetComponentPool<Component>();
+        signatures[entity].set(typeToId[std::type_index(typeid(Component))]);
         return comp->AddComponent(entity);
     }
     
     template <typename Component>
     void DeleteComponent(const EntityId entity)
     {
+        assert(signatures.at(entity).test(typeToId.at(std::type_index(typeid(Component)))));
         auto comp = GetComponentPool<Component>();
+        signatures[entity].reset(typeToId[std::type_index(typeid(Component))]);
         comp->DeleteComponent(entity);       
     }
 
@@ -80,6 +87,7 @@ public:
     void TryDeleteComponent(const EntityId entity)
     {
         auto comp = GetComponentPool<Component>();
+        signatures[entity].reset(typeToId[std::type_index(typeid(Component))]);
         comp->TryDeleteComponent(entity);       
     }
 

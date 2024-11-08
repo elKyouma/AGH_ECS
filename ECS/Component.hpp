@@ -24,8 +24,8 @@ public:
 
     ComponentPool()
     {
-        for(ComponentId id = MAX_ENTITY_COUNT - 1; id >= 0; id--)
-            availableIds.push(id);
+        for(ComponentId id = MAX_ENTITY_COUNT; id > 0; id--)
+            availableIds.push(id - 1);
     }
 
     Component& AddComponent(const EntityId entity)
