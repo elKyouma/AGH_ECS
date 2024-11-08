@@ -40,20 +40,20 @@ public:
     Component& GetComponent(const EntityId entity)
     {
         ComponentId compId = entityToComponentId[entity];
-        ASSERT(components.find(compId) == components.end());
+        ASSERT(entityToComponentId.find(entity) != entityToComponentId.end());
         return components[compId];   
     }
     
     const Component& GetComponent(const EntityId entity) const
     { 
         ComponentId compId = entityToComponentId.at(entity);
-        ASSERT(components.find(compId) == components.end());
-         return components[compId];   
+        ASSERT(entityToComponentId.find(entity) != entityToComponentId.end());
+        return components[compId];   
     }
     
     std::optional<std::reference_wrapper<Component>> TryGetComponent(const EntityId entity)
     {
-        if(entityToComponentId.find(entity) != components.end())
+        if(entityToComponentId.find(entity) != entityToComponentId.end())
             return {components[entity]};
         else
             return {};
@@ -61,7 +61,7 @@ public:
     
     std::optional<std::reference_wrapper<const Component>> TryGetComponent(const EntityId entity) const
     { 
-        if(entityToComponentId.find(entity) != components.end())
+        if(entityToComponentId.find(entity) != entityToComponentId.end())
             return {components[entity]};
         else
             return {};
