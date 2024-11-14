@@ -21,7 +21,7 @@ public:
 
     void OnEntityDestroyed(const EntityId entity)
     {
-        ASSERT(entities.find(entity) == entities.end())
+        ASSERT(entities.find(entity) != entities.end())
         entities.erase(entity);
     }
 

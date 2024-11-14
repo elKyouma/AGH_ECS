@@ -102,7 +102,7 @@ TEST_F(ComponentPoolTest, ManipulatingManyComponents)
 class SystemTest : public testing::Test
 {
   protected:
-  SystemTest()
+  void SetUp() override
   {
     typeToId[std::type_index(typeid(Position))] = 0;
     typeToId[std::type_index(typeid(Rotation))] = 1;
@@ -114,6 +114,18 @@ class SystemTest : public testing::Test
     signatures[0].set(typeToId[std::type_index(typeid(Rotation))]);
 
     signatures[1].set(typeToId[std::type_index(typeid(Rotation))]);
+  }
+
+  void TearDown() override 
+  {
+    signatures[0].reset(typeToId[std::type_index(typeid(Position))]);
+    signatures[0].reset(typeToId[std::type_index(typeid(Rotation))]);
+
+    signatures[1].reset(typeToId[std::type_index(typeid(Position))]);
+    signatures[1].reset(typeToId[std::type_index(typeid(Rotation))]);
+
+    signature.reset(typeToId[std::type_index(typeid(Position))]);
+    signature.reset(typeToId[std::type_index(typeid(Rotation))]);
   }
 
   class DummySys : public System
@@ -185,5 +197,18 @@ TEST_F(SystemTest, ChangingEntitySignature)
 
   EXPECT_EQ(sys.CheckEntityCount(), 1) << "Wrong entity count";
   EXPECT_FALSE(sys.CheckIfEntitySubscribed(0)) << "Entity with wrong signature subscribed";
+
+}
+
+TEST_F(SystemTest, DeletingEntity)
+{
+  DummySys sys(signature);
+  sys.Init(signatures);
+
+  EXPECT_ANY_THROW(sys.OnEntityDestroyed(2)) << "Deleted non-existent entity";
+
+  sys.OnEntityDestroyed(0);
+  EXPECT_EQ(sys.CheckEntityCount(), 0) << "Wrong entity count";
+  EXPECT_FALSE(sys.CheckIfEntitySubscribed(0)) << "Deleted entity is subscribed";
 
 }
