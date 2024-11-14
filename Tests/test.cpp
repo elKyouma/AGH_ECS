@@ -162,9 +162,28 @@ TEST_F(SystemTest, SystemInitialization)
 
   DummySys sys2(signature);
   sys2.Init(signatures);
-  
+
   EXPECT_EQ(sys2.CheckEntityCount(), 1) << "Wrong entity count";
   EXPECT_TRUE(sys2.CheckIfEntitySubscribed(0)) << "Entity with right signature unsubscribed";
   EXPECT_FALSE(sys2.CheckIfEntitySubscribed(1)) << "Entity with wrong signature subscribed";
+
+}
+
+TEST_F(SystemTest, ChangingEntitySignature)
+{
+  DummySys sys(signature);
+  sys.Init(signatures);
+
+  signatures[1].set(typeToId[std::type_index(typeid(Position))]);
+  sys.OnEntitySignatureChanged(1, signatures[1]);
+
+  EXPECT_EQ(sys.CheckEntityCount(), 2) << "Wrong entity count";
+  EXPECT_TRUE(sys.CheckIfEntitySubscribed(1)) << "Entity with right signature unsubscribed";
+
+  signatures[0].reset(typeToId[std::type_index(typeid(Position))]);
+  sys.OnEntitySignatureChanged(0, signatures[0]);
+
+  EXPECT_EQ(sys.CheckEntityCount(), 1) << "Wrong entity count";
+  EXPECT_FALSE(sys.CheckIfEntitySubscribed(0)) << "Entity with wrong signature subscribed";
 
 }
