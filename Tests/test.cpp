@@ -1,6 +1,8 @@
-#include "gtest/gtest.h"
 #include <gtest/gtest.h>
 #include "Component.hpp"
+#include "System.hpp"
+#include "ECS.cpp"
+#include <bitset>
 
 class ComponentPoolTest : public testing::Test
 {
@@ -18,7 +20,6 @@ class ComponentPoolTest : public testing::Test
     }
   };
   
-
 };
 
 TEST_F(ComponentPoolTest, AddingComponent) {
@@ -96,4 +97,74 @@ TEST_F(ComponentPoolTest, ManipulatingManyComponents)
       }
     }
   }
+}
+
+class SystemTest : public testing::Test
+{
+  protected:
+  SystemTest()
+  {
+    typeToId[std::type_index(typeid(Position))] = 0;
+    typeToId[std::type_index(typeid(Rotation))] = 1;
+
+    signature.set(typeToId[std::type_index(typeid(Position))]);
+    signature.set(typeToId[std::type_index(typeid(Rotation))]);
+    
+    signatures[0].set(typeToId[std::type_index(typeid(Position))]);
+    signatures[0].set(typeToId[std::type_index(typeid(Rotation))]);
+
+    signatures[1].set(typeToId[std::type_index(typeid(Rotation))]);
+  }
+
+  class DummySys : public System
+  {
+    public:
+    DummySys(Signature sysSign = 0u) : System()
+    {
+      systemSignature = 0u;
+      if(sysSign != 0)
+        systemSignature = sysSign;
+    }
+
+    int CheckEntityCount()
+    {
+      return entities.size();
+    }
+    void Update() override {}
+  };
+
+  struct Position
+  {
+    double x;
+    double y;
+    
+    void Set(double x, double y)
+    {
+      this->x = x;
+      this->y = y;
+    }
+  };
+
+  struct Rotation
+  {
+    double deg;
+  };
+
+  Signature signature;
+  std::array<Signature, MAX_ENTITY_COUNT> signatures;
+  std::unordered_map<std::type_index, uint32_t> typeToId;
+};
+
+TEST_F(SystemTest, SystemInitialization)
+{
+  DummySys sys1;
+  EXPECT_ANY_THROW(sys1.Init(signatures));
+
+  DummySys sys2(signature);
+  sys2.Init(signatures);
+  
+  EXPECT_EQ(sys2.CheckEntityCount(), 1) << "Wrong entity count";
+  EXPECT_TRUE(sys2.CheckIfEntitySubscribed(0)) << "Entity with right signature unsubscribed";
+  EXPECT_FALSE(sys2.CheckIfEntitySubscribed(1)) << "Entity with wrong signature subscribed";
+
 }

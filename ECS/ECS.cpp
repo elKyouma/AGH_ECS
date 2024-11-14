@@ -40,7 +40,8 @@ public:
 
         availableEntityIds.push(entity);
     }
-
+    
+    //TODO: line: components[numberOfComponentPools] = std::make_unique<ComponentPool<Component>()>(); throws error
     template <typename Component>
     void RegisterComponentPool()
     {
