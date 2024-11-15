@@ -1,6 +1,6 @@
+#include "System.hpp"
 #include "Types.hpp"
 #include "Component.hpp"
-#include <cassert>
 #include <memory>
 #include <stack>
 #include <typeindex>
@@ -11,12 +11,13 @@ class ECS
 {
 private:
     using ComponentPoolId = uint32_t;
+    using SystemId = uint32_t;
     
     template<typename Component>
     ComponentPool<Component>* GetComponentPool()
     {
         return dynamic_cast<ComponentPool<Component>*>
-            (components[typeToId[std::type_index(typeid(Component))]].get());
+            (components[typeToCompId[std::type_index(typeid(Component))]].get());
     }
 
 public:
@@ -41,19 +42,35 @@ public:
         availableEntityIds.push(entity);
     }
     
-    //TODO: line: components[numberOfComponentPools] = std::make_unique<ComponentPool<Component>()>(); throws error
+    void UpdateSystems()
+    {
+        for(SystemId id; id < numberOfSystems; id++)
+            systems[id]->Update();
+    }
+
+    template <typename System>
+    void RegisterSystem()
+    {
+        ASSERT(typeToSysId.find(std::type_index(typeid(System))) == typeToSysId.end());
+        typeToSysId[std::type_index(typeid(System))] = numberOfSystems;
+        systems[numberOfSystems] = std::make_unique<System>();
+        systems[numberOfSystems]->Init(signatures);
+        numberOfSystems++;
+    }
+
     template <typename Component>
     void RegisterComponentPool()
     {
-        typeToId[std::type_index(typeid(Component))] = numberOfComponentPools;
-        components[numberOfComponentPools] = std::make_unique<ComponentPool<Component>()>();
+        ASSERT(typeToCompId.find(std::type_index(typeid(Component))) == typeToCompId.end());
+        typeToCompId[std::type_index(typeid(Component))] = numberOfComponentPools;
+        components[numberOfComponentPools] = static_cast<IComponentPool>(std::make_unique<ComponentPool<Component>>());
         numberOfComponentPools++;
     }
 
     template <typename Component>
     Component& GetComponent(const EntityId entity)
     {
-        assert(signatures[entity].test(typeToId[std::type_index(typeid(Component))]));
+        ASSERT(signatures[entity].test(typeToCompId[std::type_index(typeid(Component))]));
         auto comp = GetComponentPool<Component>();
         return comp->GetComponent(entity);
     }
@@ -61,7 +78,7 @@ public:
     template <typename Component>
     const Component& GetComponent(const EntityId entity) const
     {
-        assert(signatures.at(entity).test(typeToId.at(std::type_index(typeid(Component)))));
+        ASSERT(signatures.at(entity).test(typeToCompId.at(std::type_index(typeid(Component)))));
         const auto comp = GetComponentPool<Component>(); 
         return comp->GetComponent(entity);
     }
@@ -69,18 +86,18 @@ public:
     template <typename Component>
     Component& AddComponent(const EntityId entity)
     {
-        assert(!signatures.at(entity).test(typeToId.at(std::type_index(typeid(Component)))));
+        ASSERT(!signatures.at(entity).test(typeToCompId.at(std::type_index(typeid(Component)))));
         auto comp = GetComponentPool<Component>();
-        signatures[entity].set(typeToId[std::type_index(typeid(Component))]);
+        signatures[entity].set(typeToCompId[std::type_index(typeid(Component))]);
         return comp->AddComponent(entity);
     }
     
     template <typename Component>
     void DeleteComponent(const EntityId entity)
     {
-        assert(signatures.at(entity).test(typeToId.at(std::type_index(typeid(Component)))));
+        ASSERT(signatures.at(entity).test(typeToCompId.at(std::type_index(typeid(Component)))));
         auto comp = GetComponentPool<Component>();
-        signatures[entity].reset(typeToId[std::type_index(typeid(Component))]);
+        signatures[entity].reset(typeToCompId[std::type_index(typeid(Component))]);
         comp->DeleteComponent(entity);       
     }
 
@@ -88,14 +105,21 @@ public:
     void TryDeleteComponent(const EntityId entity)
     {
         auto comp = GetComponentPool<Component>();
-        signatures[entity].reset(typeToId[std::type_index(typeid(Component))]);
+        signatures[entity].reset(typeToCompId[std::type_index(typeid(Component))]);
         comp->TryDeleteComponent(entity);       
     }
 
 private:
     std::array<std::unique_ptr<IComponentPool>, MAX_COMPONENT_COUNT> components;
+    std::array<std::unique_ptr<System>, MAX_SYSTEM_COUNT> systems;
+
     std::stack<EntityId> availableEntityIds;
-    std::unordered_map<std::type_index, ComponentPoolId> typeToId;
+    
+    std::unordered_map<std::type_index, ComponentPoolId> typeToCompId;
+    std::unordered_map<std::type_index, SystemId> typeToSysId;
+    
     std::array<Signature, MAX_ENTITY_COUNT> signatures;
     ComponentPoolId numberOfComponentPools = 0;
+    ComponentPoolId numberOfSystems = 0;
+
 };
