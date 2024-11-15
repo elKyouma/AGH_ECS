@@ -63,7 +63,7 @@ public:
     {
         ASSERT(typeToCompId.find(std::type_index(typeid(Component))) == typeToCompId.end());
         typeToCompId[std::type_index(typeid(Component))] = numberOfComponentPools;
-        components[numberOfComponentPools] = static_cast<IComponentPool>(std::make_unique<ComponentPool<Component>>());
+        components[numberOfComponentPools] = std::make_unique<IComponentPool>(ComponentPool<Component>());
         numberOfComponentPools++;
     }
 
