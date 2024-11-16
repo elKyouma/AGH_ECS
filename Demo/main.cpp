@@ -37,11 +37,11 @@ int main(int argc, char* argv[])
 	}
 	SDL_DestroySurface(surface);
 
-    std::ofstream benchmarkFile("benchmark.txt");
-    int it = 0;
+    //std::ofstream benchmarkFile("benchmark.txt");
+    //int it = 0;
 	while (1) {
-		Benchmark benchmark;
-        benchmark.Start();
+		//Benchmark benchmark;
+        //benchmark.Start();
         SDL_PollEvent(&event);
 		if (event.type == SDL_EVENT_QUIT) {
 			break;
@@ -51,11 +51,11 @@ int main(int argc, char* argv[])
 		SDL_RenderTexture(renderer, texture, NULL, NULL);
 		SDL_RenderPresent(renderer);
 
-        auto benchmarkData =benchmark.Measure();
-        benchmarkFile << it << '\t' << benchmarkData.miliSec << '\t' << benchmarkData.megaCycles << '\n'; 
-        it++;
+        //auto benchmarkData =benchmark.Measure();
+        //benchmarkFile << it << '\t' << benchmarkData.miliSec << '\t' << benchmarkData.megaCycles << '\n'; 
+        //it++;
 	}
-    benchmarkFile.close();
+    //benchmarkFile.close();
 	SDL_DestroyTexture(texture);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
