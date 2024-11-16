@@ -10,9 +10,6 @@
 class ECS
 {
 private:
-    using ComponentPoolId = uint32_t;
-    using SystemId = uint32_t;
-    
     template<typename Component>
     ComponentPool<Component>* GetComponentPool()
     {
@@ -54,7 +51,7 @@ public:
         ASSERT(typeToSysId.find(std::type_index(typeid(System))) == typeToSysId.end());
         typeToSysId[std::type_index(typeid(System))] = numberOfSystems;
         systems[numberOfSystems] = std::make_unique<System>();
-        systems[numberOfSystems]->Init(signatures);
+        systems[numberOfSystems]->Init(signatures, typeToCompId);
         numberOfSystems++;
     }
 

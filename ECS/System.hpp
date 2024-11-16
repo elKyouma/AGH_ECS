@@ -1,15 +1,19 @@
 #pragma once
 #include "Types.hpp"
 #include <array>
+#include <typeindex>
+#include <unordered_map>
 #include <unordered_set>
 
 class System
 {
 public:
-    void Init(std::array<Signature, MAX_ENTITY_COUNT>& signatures)
+    void Init(std::array<Signature, MAX_ENTITY_COUNT>& signatures,
+              std::unordered_map<std::type_index, ComponentPoolId>& compToId)
     {
+        SetSignature(compToId);
         ASSERT(systemSignature.to_ulong() != 0u);
-
+        
         for(EntityId id = 0; id < MAX_ENTITY_COUNT; id++)
             if((systemSignature.to_ulong() & signatures[id].to_ulong()) == systemSignature.to_ulong())
                 entities.emplace(id);
@@ -17,7 +21,8 @@ public:
 
     //TODO: Think about making update protected, and befriending ECS
 
-    virtual void Update() =0;
+    virtual void SetSignature(std::unordered_map<std::type_index, ComponentPoolId>& compToId) = 0;
+    virtual void Update() = 0;
 
     void OnEntityDestroyed(const EntityId entity)
     {

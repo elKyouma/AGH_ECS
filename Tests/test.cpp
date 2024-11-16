@@ -3,6 +3,7 @@
 #include "System.hpp"
 #include "ECS.cpp"
 #include <bitset>
+#include <typeindex>
 
 class ComponentPoolTest : public testing::Test
 {
@@ -104,44 +105,12 @@ protected:
     {
         typeToId[std::type_index(typeid(Position))] = 0;
         typeToId[std::type_index(typeid(Rotation))] = 1;
-
-        signature.set(typeToId[std::type_index(typeid(Position))]);
-        signature.set(typeToId[std::type_index(typeid(Rotation))]);
         
         signatures[0].set(typeToId[std::type_index(typeid(Position))]);
         signatures[0].set(typeToId[std::type_index(typeid(Rotation))]);
-
+        
         signatures[1].set(typeToId[std::type_index(typeid(Rotation))]);
     }
-
-    void TearDown() override 
-    {
-        signatures[0].reset(typeToId[std::type_index(typeid(Position))]);
-        signatures[0].reset(typeToId[std::type_index(typeid(Rotation))]);
-
-        signatures[1].reset(typeToId[std::type_index(typeid(Position))]);
-        signatures[1].reset(typeToId[std::type_index(typeid(Rotation))]);
-
-        signature.reset(typeToId[std::type_index(typeid(Position))]);
-        signature.reset(typeToId[std::type_index(typeid(Rotation))]);
-    }
-
-    class DummySys : public System
-    {
-    public:
-        DummySys(Signature sysSign = 0u) : System()
-        {
-            systemSignature = 0u;
-            if(sysSign != 0)
-                systemSignature = sysSign;
-        }
-
-        int CheckEntityCount()
-        {
-            return entities.size();
-        }
-        void Update() override {}
-    };
 
     struct Position
     {
@@ -160,20 +129,59 @@ protected:
         double deg;
     };
 
-    Signature signature;
+    class EmptySys : public System
+    {
+    public:
+        void SetSignature(std::unordered_map<std::type_index, ComponentPoolId>& compToId) override{}
+        void Update() override {}
+    };
+
+    class DummySys1 : public System
+    {
+    public:
+        int EntitySize()
+        {
+            return entities.size();
+        }
+        
+        void SetSignature(std::unordered_map<std::type_index, ComponentPoolId>& compToId) override
+        {
+            systemSignature.set(compToId[std::type_index(typeid(Position))]);
+        }
+
+        void Update() override {}
+    };
+    
+    class DummySys2 : public System
+    {
+    public:
+        int EntitySize()
+        {
+            return entities.size();
+        }
+        
+        void SetSignature(std::unordered_map<std::type_index, ComponentPoolId>& compToId) override
+        {
+            systemSignature.set(compToId[std::type_index(typeid(Position))]);
+            systemSignature.set(compToId[std::type_index(typeid(Rotation))]);
+        }
+
+        void Update() override {}
+    };
+
     std::array<Signature, MAX_ENTITY_COUNT> signatures;
     std::unordered_map<std::type_index, uint32_t> typeToId;
 };
 
 TEST_F(SystemTest, SystemInitialization)
 {
-    DummySys sys1;
-    EXPECT_ANY_THROW(sys1.Init(signatures));
+    EmptySys sys1;
+    EXPECT_ANY_THROW(sys1.Init(signatures, typeToId));
 
-    DummySys sys2(signature);
-    sys2.Init(signatures);
+    DummySys2 sys2;
+    sys2.Init(signatures, typeToId);
 
-    EXPECT_EQ(sys2.CheckEntityCount(), 1) << "Wrong entity count";
+    EXPECT_EQ(sys2.EntitySize(), 1) << "Wrong entity count";
     EXPECT_TRUE(sys2.CheckIfEntitySubscribed(0)) << "Entity with right signature unsubscribed";
     EXPECT_FALSE(sys2.CheckIfEntitySubscribed(1)) << "Entity with wrong signature subscribed";
 
@@ -181,30 +189,30 @@ TEST_F(SystemTest, SystemInitialization)
 
 TEST_F(SystemTest, ChangingEntitySignature)
 {
-    DummySys sys(signature);
-    sys.Init(signatures);
+    DummySys2 sys;
+    sys.Init(signatures, typeToId);
 
     signatures[1].set(typeToId[std::type_index(typeid(Position))]);
     sys.OnEntitySignatureChanged(1, signatures[1]);
 
-    EXPECT_EQ(sys.CheckEntityCount(), 2) << "Wrong entity count";
+    EXPECT_EQ(sys.EntitySize(), 2) << "Wrong entity count";
     EXPECT_TRUE(sys.CheckIfEntitySubscribed(1)) << "Entity with right signature unsubscribed";
 
     signatures[0].reset(typeToId[std::type_index(typeid(Position))]);
     sys.OnEntitySignatureChanged(0, signatures[0]);
 
-    EXPECT_EQ(sys.CheckEntityCount(), 1) << "Wrong entity count";
+    EXPECT_EQ(sys.EntitySize(), 1) << "Wrong entity count";
     EXPECT_FALSE(sys.CheckIfEntitySubscribed(0)) << "Entity with wrong signature subscribed";
 
 }
 
 TEST_F(SystemTest, DeletingEntity)
 {
-    DummySys sys(signature);
-    sys.Init(signatures);
+    DummySys2 sys;
+    sys.Init(signatures, typeToId);
     EXPECT_ANY_THROW(sys.OnEntityDestroyed(2)) << "Deleted non-existent entity";
 
     sys.OnEntityDestroyed(0);
-    EXPECT_EQ(sys.CheckEntityCount(), 0) << "Wrong entity count";
+    EXPECT_EQ(sys.EntitySize(), 0) << "Wrong entity count";
     EXPECT_FALSE(sys.CheckIfEntitySubscribed(0)) << "Deleted entity is subscribed";
 }
