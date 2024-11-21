@@ -20,8 +20,8 @@ private:
 public:
     ECS()
     {
-       for(EntityId id = MAX_ENTITY_COUNT - 1; id >=0; id--)
-            availableEntityIds.push(id);
+       for(EntityId id = MAX_ENTITY_COUNT; id >0; id--)
+            availableEntityIds.push(id - 1);
     }
 
     EntityId CreateEntity()
@@ -33,8 +33,10 @@ public:
 
     void DestroyEntity(EntityId entity)
     {
-        for(auto& iComp : components)
-            iComp->TryDeleteComponent(entity);
+        for(ComponentPoolId compId = 0; compId < numberOfComponentPools; compId++)
+        {
+            components[compId]->TryDeleteComponent(entity);
+        }
 
         availableEntityIds.push(entity);
     }
@@ -42,7 +44,7 @@ public:
     void UpdateSystems()
     {
         for(SystemId id; id < numberOfSystems; id++)
-            systems[id]->Update();
+            systems[id]->Update(typeToCompId, components);
     }
 
     template <typename System>
@@ -60,7 +62,7 @@ public:
     {
         ASSERT(typeToCompId.find(std::type_index(typeid(Component))) == typeToCompId.end());
         typeToCompId[std::type_index(typeid(Component))] = numberOfComponentPools;
-        components[numberOfComponentPools] = std::make_unique<IComponentPool>(ComponentPool<Component>());
+        components[numberOfComponentPools] = std::make_unique<ComponentPool<Component>>();
         numberOfComponentPools++;
     }
 

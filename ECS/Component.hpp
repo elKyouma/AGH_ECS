@@ -13,7 +13,7 @@ public:
 };
 
 template <typename Component>
-class ComponentPool : IComponentPool
+class ComponentPool : public IComponentPool
 {
 private:
     //TODO: Think about supporting different types provided by the user

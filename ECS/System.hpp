@@ -1,9 +1,11 @@
 #pragma once
 #include "Types.hpp"
+#include "Component.hpp"
 #include <array>
 #include <typeindex>
 #include <unordered_map>
 #include <unordered_set>
+#include <memory>
 
 class System
 {
@@ -22,7 +24,8 @@ public:
     //TODO: Think about making update protected, and befriending ECS
 
     virtual void SetSignature(std::unordered_map<std::type_index, ComponentPoolId>& compToId) = 0;
-    virtual void Update() = 0;
+    virtual void Update(std::unordered_map<std::type_index, ComponentPoolId>& typeToCompId, 
+                        std::array<std::unique_ptr<IComponentPool>, MAX_COMPONENT_COUNT>& components) = 0;
 
     void OnEntityDestroyed(const EntityId entity)
     {

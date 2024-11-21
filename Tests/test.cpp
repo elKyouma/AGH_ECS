@@ -2,6 +2,7 @@
 #include "Component.hpp"
 #include "System.hpp"
 #include "ECS.cpp"
+#include "Types.hpp"
 #include <bitset>
 #include <typeindex>
 
@@ -133,7 +134,8 @@ protected:
     {
     public:
         void SetSignature(std::unordered_map<std::type_index, ComponentPoolId>& compToId) override{}
-        void Update() override {}
+        void Update(std::unordered_map<std::type_index, ComponentPoolId>& typeToCompId, 
+                        std::array<std::unique_ptr<IComponentPool>, MAX_COMPONENT_COUNT>& components) override {}
     };
 
     class DummySys1 : public System
@@ -149,7 +151,8 @@ protected:
             systemSignature.set(compToId[std::type_index(typeid(Position))]);
         }
 
-        void Update() override {}
+        void Update(std::unordered_map<std::type_index, ComponentPoolId>& typeToCompId, 
+                        std::array<std::unique_ptr<IComponentPool>, MAX_COMPONENT_COUNT>& components) override {}
     };
     
     class DummySys2 : public System
@@ -166,7 +169,8 @@ protected:
             systemSignature.set(compToId[std::type_index(typeid(Rotation))]);
         }
 
-        void Update() override {}
+        void Update(std::unordered_map<std::type_index, ComponentPoolId>& typeToCompId, 
+                        std::array<std::unique_ptr<IComponentPool>, MAX_COMPONENT_COUNT>& components) override {}
     };
 
     std::array<Signature, MAX_ENTITY_COUNT> signatures;
@@ -215,4 +219,59 @@ TEST_F(SystemTest, DeletingEntity)
     sys.OnEntityDestroyed(0);
     EXPECT_EQ(sys.EntitySize(), 0) << "Wrong entity count";
     EXPECT_FALSE(sys.CheckIfEntitySubscribed(0)) << "Deleted entity is subscribed";
+}
+
+class ECSTest : public testing::Test
+{
+protected:
+     struct Position
+    {
+        double x = 0.0;
+        double y = 0.0;
+      
+        void Set(double x, double y)
+        {
+            this->x = x;
+            this->y = y;
+        }
+    };
+
+    class DummySys : public System
+    {
+    public:
+        
+        void SetSignature(std::unordered_map<std::type_index, ComponentPoolId>& compToId) override
+        {
+            systemSignature.set(compToId[std::type_index(typeid(Position))]);
+        }
+
+        void Update(std::unordered_map<std::type_index, ComponentPoolId>& typeToCompId,
+                    std::array<std::unique_ptr<IComponentPool>, MAX_COMPONENT_COUNT>& components) override 
+        {
+            for(EntityId ent : entities)
+            {
+                auto& pos = dynamic_cast<ComponentPool<Position>*>(
+                    components[typeToCompId[std::type_index(typeid(Position))]].get())->GetComponent(ent);
+                
+                pos.x += 1.0;
+                pos.y += 1.0;
+            }
+        }
+    };
+};
+
+TEST_F(ECSTest, EntityManipulation)
+{
+    ECS ecs;
+    EntityId ent = ecs.CreateEntity();
+    EXPECT_EQ(ent, 0) << "1";
+    ent = ecs.CreateEntity();
+    EXPECT_EQ(ent, 1) << "2";
+    ent = ecs.CreateEntity();
+    EXPECT_EQ(ent, 2) << "3";
+
+    ecs.DestroyEntity(1);
+
+    ent = ecs.CreateEntity();
+    EXPECT_EQ(ent, 1) << "4";
 }
