@@ -13,7 +13,9 @@ int main(int argc, char* argv[])
     while (!isQuiting) {
 		//Benchmark benchmark;
         //benchmark.Start();
-        isQuiting = app.Update();
+        isQuiting = app.ProcessInputs();
+
+        app.Update();
         app.Render();
 
         //auto benchmarkData =benchmark.Measure();

@@ -6,7 +6,8 @@ class App
 public:
     App();
 
-    bool Update();
+    void Update();
+    bool ProcessInputs();
     void Render();
     ~App();
 private:

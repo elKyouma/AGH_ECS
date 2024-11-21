@@ -35,7 +35,7 @@ void App::Clean()
 	SDL_DestroyTexture(texture);
 }
 
-bool App::Update()
+bool App::ProcessInputs()
 {
     bool isQuiting = false;
     SDL_PollEvent(&event);
@@ -44,6 +44,11 @@ bool App::Update()
 		isQuiting = true;
 
     return isQuiting;
+
+}
+
+bool App::Update()
+{
 }
 
 void App::Render()
