@@ -275,3 +275,21 @@ TEST_F(ECSTest, EntityManipulation)
     ent = ecs.CreateEntity();
     EXPECT_EQ(ent, 1) << "4";
 }
+
+TEST_F(ECSTest, ComponentManipulation)
+{
+    ECS ecs;
+    EntityId ent = ecs.CreateEntity();
+    EntityId ent2 = ecs.CreateEntity();
+
+    EXPECT_NO_THROW(ecs.RegisterComponentPool<Position>()) << "Can not register component pool";
+    EXPECT_ANY_THROW(ecs.RegisterComponentPool<Position>()) << "Registered already existing component pool";
+
+    EXPECT_NO_THROW(ecs.AddComponent<Position>(ent)) << "Can not add component to entity signature";
+    EXPECT_ANY_THROW(ecs.AddComponent<Position>(ent)) << "Added already existing component in entity signature";
+    
+
+    EXPECT_ANY_THROW(ecs.GetComponent<Position>(ent2)) << "Getting access to non-existent component";    
+    EXPECT_NO_THROW(Position& pos = ecs.GetComponent<Position>(ent)) << "Can not get access to an existing component";
+
+}

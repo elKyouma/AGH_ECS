@@ -34,9 +34,7 @@ public:
     void DestroyEntity(EntityId entity)
     {
         for(ComponentPoolId compId = 0; compId < numberOfComponentPools; compId++)
-        {
             components[compId]->TryDeleteComponent(entity);
-        }
 
         availableEntityIds.push(entity);
     }
