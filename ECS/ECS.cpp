@@ -11,10 +11,24 @@ class ECS
 {
 private:
     template<typename Component>
+    constexpr ComponentPoolId CompId()
+    {
+        ASSERT(typeToCompId.find(std::type_index(typeid(Component))) == typeToCompId.end());
+        return typeToCompId[std::type_index(typeid(Component))];
+    }
+
+    template<typename System>
+    constexpr ComponentPoolId SysId()
+    {
+        ASSERT(typeToSysId.find(std::type_index(typeid(System))) == typeToSysId.end());
+        return typeToSysId[std::type_index(typeid(System))];
+    }
+    
+    template<typename Component>
     ComponentPool<Component>* GetComponentPool()
     {
         return dynamic_cast<ComponentPool<Component>*>
-            (components[typeToCompId[std::type_index(typeid(Component))]].get());
+            (components[CompId<Component>()].get());
     }
 
 public:
@@ -48,7 +62,6 @@ public:
     template <typename System>
     void RegisterSystem()
     {
-        ASSERT(typeToSysId.find(std::type_index(typeid(System))) == typeToSysId.end());
         typeToSysId[std::type_index(typeid(System))] = numberOfSystems;
         systems[numberOfSystems] = std::make_unique<System>();
         systems[numberOfSystems]->Init(signatures, typeToCompId);
@@ -58,7 +71,6 @@ public:
     template <typename Component>
     void RegisterComponentPool()
     {
-        ASSERT(typeToCompId.find(std::type_index(typeid(Component))) == typeToCompId.end());
         typeToCompId[std::type_index(typeid(Component))] = numberOfComponentPools;
         components[numberOfComponentPools] = std::make_unique<ComponentPool<Component>>();
         numberOfComponentPools++;
@@ -67,7 +79,6 @@ public:
     template <typename Component>
     Component& GetComponent(const EntityId entity)
     {
-        ASSERT(signatures[entity].test(typeToCompId[std::type_index(typeid(Component))]));
         auto comp = GetComponentPool<Component>();
         return comp->GetComponent(entity);
     }
@@ -75,7 +86,6 @@ public:
     template <typename Component>
     const Component& GetComponent(const EntityId entity) const
     {
-        ASSERT(signatures.at(entity).test(typeToCompId.at(std::type_index(typeid(Component)))));
         const auto comp = GetComponentPool<Component>(); 
         return comp->GetComponent(entity);
     }
@@ -83,18 +93,16 @@ public:
     template <typename Component>
     Component& AddComponent(const EntityId entity)
     {
-        ASSERT(!signatures.at(entity).test(typeToCompId.at(std::type_index(typeid(Component)))));
         auto comp = GetComponentPool<Component>();
-        signatures[entity].set(typeToCompId[std::type_index(typeid(Component))]);
+        signatures[entity].set(CompId<Component>());
         return comp->AddComponent(entity);
     }
     
     template <typename Component>
     void DeleteComponent(const EntityId entity)
     {
-        ASSERT(signatures.at(entity).test(typeToCompId.at(std::type_index(typeid(Component)))));
         auto comp = GetComponentPool<Component>();
-        signatures[entity].reset(typeToCompId[std::type_index(typeid(Component))]);
+        signatures[entity].reset(CompId<Component>());
         comp->DeleteComponent(entity);       
     }
 
@@ -102,7 +110,7 @@ public:
     void TryDeleteComponent(const EntityId entity)
     {
         auto comp = GetComponentPool<Component>();
-        signatures[entity].reset(typeToCompId[std::type_index(typeid(Component))]);
+        signatures[entity].reset(CompId<Component>());
         comp->TryDeleteComponent(entity);       
     }
 
