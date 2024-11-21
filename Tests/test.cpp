@@ -236,6 +236,11 @@ protected:
         }
     };
 
+    struct Rotation
+    {
+        double deg;
+    };
+
     class DummySys : public System
     {
     public:
@@ -282,14 +287,29 @@ TEST_F(ECSTest, ComponentManipulation)
     EntityId ent = ecs.CreateEntity();
     EntityId ent2 = ecs.CreateEntity();
 
-    EXPECT_NO_THROW(ecs.RegisterComponentPool<Position>()) << "Can not register component pool";
+    ASSERT_NO_THROW(ecs.RegisterComponentPool<Position>()) << "Can not register component pool (Position)";
     EXPECT_ANY_THROW(ecs.RegisterComponentPool<Position>()) << "Registered already existing component pool";
+    ASSERT_NO_THROW(ecs.RegisterComponentPool<Rotation>()) << "Can not register component pool (Rotation)";
 
-    EXPECT_NO_THROW(ecs.AddComponent<Position>(ent)) << "Can not add component to entity signature";
+    ASSERT_NO_THROW(auto& pos = ecs.AddComponent<Position>(ent)) << "Can not add component to entity signature (Position)";
     EXPECT_ANY_THROW(ecs.AddComponent<Position>(ent)) << "Added already existing component in entity signature";
+    ASSERT_NO_THROW(auto& pos = ecs.AddComponent<Rotation>(ent)) << "Can not add component to entity signature (Rotation)";
     
 
     EXPECT_ANY_THROW(ecs.GetComponent<Position>(ent2)) << "Getting access to non-existent component";    
-    EXPECT_NO_THROW(Position& pos = ecs.GetComponent<Position>(ent)) << "Can not get access to an existing component";
+    ASSERT_NO_THROW(ecs.GetComponent<Position>(ent)) << "Can not get access to an existing component";
+   
+    EXPECT_NO_THROW(ecs.TryDeleteComponent<Position>(ent)) << "Can not delete an existing component (TryDeleteComponent)";
+    EXPECT_ANY_THROW(ecs.TryDeleteComponent<Position>(ent)) << "Deleted non-existent component (TryDeleteComponent)";
+    
+    EXPECT_NO_THROW(ecs.DeleteComponent<Rotation>(ent)) << "Can not delete an existing component (DeleteComponent)";
+    EXPECT_ANY_THROW(ecs.DeleteComponent<Rotation>(ent)) << "Deleted non-existent component (DeleteComponent)";
+
+    EXPECT_ANY_THROW(ecs.GetComponent<Position>(ent)) << "Getting access to deleted component";
+
+    EXPECT_NO_THROW(ecs.AddComponent<Position>(ent));
+    ecs.DestroyEntity(ent);
+    EXPECT_ANY_THROW(ecs.GetComponent<Position>(ent)) << "Getting access to destroyed entity component";
+
 
 }

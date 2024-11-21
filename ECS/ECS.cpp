@@ -13,7 +13,7 @@ private:
     template<typename Component>
     constexpr ComponentPoolId CompId()
     {
-        ASSERT(typeToCompId.find(std::type_index(typeid(Component))) == typeToCompId.end());
+        ASSERT(typeToCompId.find(std::type_index(typeid(Component))) != typeToCompId.end());
         return typeToCompId[std::type_index(typeid(Component))];
     }
 
@@ -34,7 +34,7 @@ private:
 public:
     ECS()
     {
-       for(EntityId id = MAX_ENTITY_COUNT; id >0; id--)
+       for(EntityId id = MAX_ENTITY_COUNT; id > 0; id--)
             availableEntityIds.push(id - 1);
     }
 
@@ -50,6 +50,7 @@ public:
         for(ComponentPoolId compId = 0; compId < numberOfComponentPools; compId++)
             components[compId]->TryDeleteComponent(entity);
 
+        signatures[entity] = 0u;
         availableEntityIds.push(entity);
     }
     
@@ -71,6 +72,7 @@ public:
     template <typename Component>
     void RegisterComponentPool()
     {
+        ASSERT(typeToCompId.find(std::type_index(typeid(Component))) == typeToCompId.end());
         typeToCompId[std::type_index(typeid(Component))] = numberOfComponentPools;
         components[numberOfComponentPools] = std::make_unique<ComponentPool<Component>>();
         numberOfComponentPools++;
@@ -79,6 +81,7 @@ public:
     template <typename Component>
     Component& GetComponent(const EntityId entity)
     {
+        ASSERT(signatures[entity].test(CompId<Component>()));
         auto comp = GetComponentPool<Component>();
         return comp->GetComponent(entity);
     }
@@ -86,6 +89,7 @@ public:
     template <typename Component>
     const Component& GetComponent(const EntityId entity) const
     {
+        ASSERT(signatures[entity].test(CompId<Component>()));
         const auto comp = GetComponentPool<Component>(); 
         return comp->GetComponent(entity);
     }
@@ -101,6 +105,7 @@ public:
     template <typename Component>
     void DeleteComponent(const EntityId entity)
     {
+        ASSERT(signatures[entity].test(CompId<Component>()));
         auto comp = GetComponentPool<Component>();
         signatures[entity].reset(CompId<Component>());
         comp->DeleteComponent(entity);       
@@ -109,6 +114,7 @@ public:
     template <typename Component>
     void TryDeleteComponent(const EntityId entity)
     {
+        ASSERT(signatures[entity].test(CompId<Component>()));
         auto comp = GetComponentPool<Component>();
         signatures[entity].reset(CompId<Component>());
         comp->TryDeleteComponent(entity);       
