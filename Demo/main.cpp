@@ -6,7 +6,7 @@
 
 int main(int argc, char* argv[])
 {
-    App app;
+    App app{};
     //std::ofstream benchmarkFile("benchmark.txt");
     //int it = 0;
 	bool isQuiting = false;

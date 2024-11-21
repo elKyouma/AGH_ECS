@@ -1,8 +1,12 @@
 #include "App.hpp"
-#include "SDL3_image/SDL_image.h"
+#include "Components.hpp"
+#include "SDL3/SDL_render.h"
+#include "Systems/Gravity.hpp"
+#include "Systems/Motion.hpp"
 #include "Utils.hpp"
 #include <SDL3/SDL.h>
 #include <chrono>
+#include <cstddef>
 #include <string>
 
 
@@ -29,6 +33,22 @@ void App::Initialise()
     std::string path = ART_PATH;
 	path += "gandalf.jpg";
     texture = LoadTextureFromFile(renderer, path);
+    
+    ecs.RegisterComponentPool<Position>();
+    ecs.RegisterComponentPool<Velocity>();
+    ecs.RegisterComponentPool<Mass>();
+    
+    particles.resize(200);
+    for(size_t i = 0; i < 200; i++)
+    {    
+        particles[i] = ecs.CreateEntity();
+        ecs.AddComponent<Mass>(particles[i]).mass = 1;
+        ecs.AddComponent<Position>(particles[i]).x = i;
+        ecs.AddComponent<Velocity>(particles[i]).vel_x = -1;
+    }
+    
+    ecs.RegisterSystem<Motion>();
+    ecs.RegisterSystem<Gravity>();
 }
 
 void App::Clean()
@@ -45,7 +65,6 @@ bool App::ProcessInputs()
 		isQuiting = true;
 
     return isQuiting;
-
 }
 
 void App::Update()
@@ -55,6 +74,7 @@ void App::Update()
         deltaTime = std::chrono::duration_cast<std::chrono::nanoseconds>(now - prevFrameStart).count() / 1.e9;
         prevFrameStart = now;
     } 
+    
 }
 
 void App::Render()
@@ -62,5 +82,13 @@ void App::Render()
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0x00);
 	SDL_RenderClear(renderer);
 	SDL_RenderTexture(renderer, texture, NULL, NULL);
-	SDL_RenderPresent(renderer);
+    
+    for(const auto ent : particles)
+    {
+        SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0x00, 0x00);
+        auto& pos = ecs.GetComponent<Position>(ent);
+        SDL_RenderPoint(renderer, pos.x, pos.y);
+    }
+
+    SDL_RenderPresent(renderer);
 }
