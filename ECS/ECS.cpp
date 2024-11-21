@@ -57,12 +57,13 @@ public:
     void UpdateSystems()
     {
         for(SystemId id; id < numberOfSystems; id++)
-            systems[id]->Update(typeToCompId, components);
+            systems[id].get()->Update(typeToCompId, components);
     }
 
     template <typename System>
     void RegisterSystem()
     {
+        SysId<System>();
         typeToSysId[std::type_index(typeid(System))] = numberOfSystems;
         systems[numberOfSystems] = std::make_unique<System>();
         systems[numberOfSystems]->Init(signatures, typeToCompId);

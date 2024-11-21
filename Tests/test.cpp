@@ -4,6 +4,7 @@
 #include "ECS.cpp"
 #include "Types.hpp"
 #include <bitset>
+#include <limits>
 #include <typeindex>
 
 class ComponentPoolTest : public testing::Test
@@ -238,10 +239,10 @@ protected:
 
     struct Rotation
     {
-        double deg;
+        double deg = 0.0;
     };
 
-    class DummySys : public System
+    class DummySys1 : public System
     {
     public:
         
@@ -257,9 +258,37 @@ protected:
             {
                 auto& pos = dynamic_cast<ComponentPool<Position>*>(
                     components[typeToCompId[std::type_index(typeid(Position))]].get())->GetComponent(ent);
-                
+
                 pos.x += 1.0;
                 pos.y += 1.0;
+            }
+        }
+    };
+
+    class DummySys2 : public System
+    {
+    public:
+        
+        void SetSignature(std::unordered_map<std::type_index, ComponentPoolId>& compToId) override
+        {
+            systemSignature.set(compToId[std::type_index(typeid(Position))]);
+            systemSignature.set(compToId[std::type_index(typeid(Rotation))]);
+        }
+
+        void Update(std::unordered_map<std::type_index, ComponentPoolId>& typeToCompId,
+                    std::array<std::unique_ptr<IComponentPool>, MAX_COMPONENT_COUNT>& components) override 
+        {
+            for(EntityId ent : entities)
+            {
+                auto& pos = dynamic_cast<ComponentPool<Position>*>(
+                    components[typeToCompId[std::type_index(typeid(Position))]].get())->GetComponent(ent);
+                
+                auto& rot = dynamic_cast<ComponentPool<Rotation>*>(
+                    components[typeToCompId[std::type_index(typeid(Rotation))]].get())->GetComponent(ent);
+
+                pos.x += 2.0;
+                pos.y += 2.0;
+                rot.deg += 2.0;
             }
         }
     };
@@ -310,6 +339,28 @@ TEST_F(ECSTest, ComponentManipulation)
     EXPECT_NO_THROW(ecs.AddComponent<Position>(ent));
     ecs.DestroyEntity(ent);
     EXPECT_ANY_THROW(ecs.GetComponent<Position>(ent)) << "Getting access to destroyed entity component";
+}
 
+TEST_F(ECSTest, SystemManipulation)
+{
+    ECS ecs;
+    EntityId ent1 = ecs.CreateEntity();
+    EntityId ent2 = ecs.CreateEntity();
 
+    ecs.RegisterComponentPool<Position>();
+    ecs.RegisterComponentPool<Rotation>();
+
+    auto& pos1 = ecs.AddComponent<Position>(ent1);
+    auto& pos2 = ecs.AddComponent<Position>(ent2);
+    auto& rot2 = ecs.AddComponent<Rotation>(ent2);
+
+    ASSERT_NO_THROW(ecs.RegisterSystem<DummySys1>()) << "Can not register system (DummySys1)";
+    EXPECT_ANY_THROW(ecs.RegisterSystem<DummySys1>()) << "Registered already existing system";
+    ASSERT_NO_THROW(ecs.RegisterSystem<DummySys2>()) << "Can not register component pool (DummySys2)";
+
+    ecs.UpdateSystems();
+
+    EXPECT_DOUBLE_EQ(pos1.x, 1.0) << "1";
+    EXPECT_DOUBLE_EQ(pos2.x, 3.0) << "2";
+    EXPECT_DOUBLE_EQ(rot2.deg, 2.0) << "3";
 }
