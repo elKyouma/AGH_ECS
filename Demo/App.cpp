@@ -47,7 +47,7 @@ bool App::ProcessInputs()
 
 }
 
-bool App::Update()
+void App::Update()
 {
 }
 
