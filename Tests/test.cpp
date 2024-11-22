@@ -6,6 +6,7 @@
 #include "Types.hpp"
 #include <span>
 #include <typeindex>
+#include "ComponentManager.hpp"
 
 class ComponentPoolTest : public testing::Test
 {
@@ -25,7 +26,7 @@ protected:
 
 TEST_F(ComponentPoolTest, AddingComponent) {
     ComponentPool<Position> comP;
-    comP.AddComponent(0);
+    EXPECT_NO_THROW(comP.AddComponent(0));
     EXPECT_ANY_THROW(comP.AddComponent(0));
 }
 
@@ -389,6 +390,7 @@ TEST_F(ECSTest, SystemManipulation)
     EXPECT_DOUBLE_EQ(rot2.deg, 2.0) << "3";
 }
 
+
 TEST_F(ECSTest, MultipleDeletionHandling)
 {
     ECS ecs;
@@ -434,5 +436,83 @@ TEST_F(ECSTest, MultipleDeletionHandling)
             EXPECT_EQ(newEnts[i], 71 - i);
         else
             EXPECT_EQ(newEnts[i], 100 + i - numberOfDestroyedEnts);
+}
+
+class ComponentManagerTest : public testing::Test
+{
+    protected:
+
+    struct Position
+    {
+        double x;
+        double y;
+      
+        void Set(double x, double y)
+        {
+            this->x = x;
+            this->y = y;
+        }
+    };
+
+    struct Rotation
+    {
+        double deg;
+    };
+};
+
+TEST_F(ComponentManagerTest, ComponentPoolRegistration)
+{
+    ComponentManager compM;
+    EXPECT_NO_THROW(compM.RegisterComponentPool<Position>()) << "Can not register component pool (1st compPool)";
+    EXPECT_ANY_THROW(compM.RegisterComponentPool<Position>()) << "Registered already existing component pool";
+
+    EXPECT_ANY_THROW(compM.GetComponentPool<Rotation>()) << "Getting access to non-existent ComponentPool";
+
+    EXPECT_NO_THROW(compM.RegisterComponentPool<Rotation>()) << "Can not register component pool (2nd compPool)";
+    
+    EXPECT_NO_THROW(compM.GetComponentPool<Position>()) << "Can not get access to an existing component pool (1st compPool)";
+    EXPECT_NO_THROW(compM.GetComponentPool<Rotation>()) << "Can not get access to an existing component pool (2st compPool)";
+}
+
+TEST_F(ComponentManagerTest, ComponentManipulation)
+{
+    ComponentManager compM;
+    compM.RegisterComponentPool<Position>();
+    auto& compPool = compM.GetComponentPool<Position>();
+
+    
+    auto& pos = compM.AddComponent<Position>(0);
+    EXPECT_TRUE(compPool.TryGetComponent(0)) << "Can not add component to an entity";    
+    pos.Set(2.1, 3.7);
+    
+    auto& pos2 = compM.GetComponent<Position>(0);
+    EXPECT_DOUBLE_EQ(pos.x, pos2.x) << "Can not get access to component";
+    EXPECT_DOUBLE_EQ(pos.y, pos2.y) << "Can not get access to component";
+}
+
+TEST_F(ComponentManagerTest, ComponentDestruction)
+{
+    ComponentManager compM;
+    compM.RegisterComponentPool<Position>();
+    compM.RegisterComponentPool<Rotation>();
+    auto& PosCompPool = compM.GetComponentPool<Position>();
+    auto& RotCompPool = compM.GetComponentPool<Rotation>();
+    
+    
+    compM.AddComponent<Position>(0);
+    compM.AddComponent<Rotation>(0);
+    
+    compM.TryDeleteComponent<Position>(0);
+    EXPECT_FALSE(PosCompPool.TryGetComponent(0)) << "Getting access to the removed component";
+
+    compM.DeleteComponent<Rotation>(0); 
+    EXPECT_FALSE(RotCompPool.TryGetComponent(0)) << "Getting access to the removed component";
+    
+    compM.AddComponent<Position>(0);
+    compM.AddComponent<Rotation>(0);
+
+    compM.DestroyAllComponents(0);
+    EXPECT_FALSE(PosCompPool.TryGetComponent(0)) << "Getting access to the removed component";
+    EXPECT_FALSE(RotCompPool.TryGetComponent(0)) << "Getting access to the removed component";
 }
 
