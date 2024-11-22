@@ -56,7 +56,7 @@ public:
     
     void UpdateSystems()
     {
-        for(SystemId id; id < numberOfSystems; id++)
+        for(SystemId id = 0; id < numberOfSystems; id++)
             systems[id].get()->Update(typeToCompId, components);
     }
 
@@ -100,6 +100,8 @@ public:
     {
         auto comp = GetComponentPool<Component>();
         signatures[entity].set(CompId<Component>());
+        for(SystemId sysId = 0; sysId < numberOfSystems; sysId++)
+            systems[sysId]->OnEntitySignatureChanged(entity, signatures[entity]);
         return comp->AddComponent(entity);
     }
     

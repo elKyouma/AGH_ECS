@@ -360,6 +360,7 @@ TEST_F(ECSTest, SystemManipulation)
 
     ecs.UpdateSystems();
 
+
     EXPECT_DOUBLE_EQ(pos1.x, 1.0) << "1";
     EXPECT_DOUBLE_EQ(pos2.x, 3.0) << "2";
     EXPECT_DOUBLE_EQ(rot2.deg, 2.0) << "3";
