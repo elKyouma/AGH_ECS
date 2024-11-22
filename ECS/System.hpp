@@ -11,7 +11,7 @@ public:
               ComponentManager* compManager)
     {
         this->compManager = compManager;
-        SetSignature();
+        SetSignature(systemSignature);
         ASSERT(systemSignature.to_ulong() != 0u);
         
         for(EntityId id = 0; id < MAX_ENTITY_COUNT; id++)
@@ -21,7 +21,7 @@ public:
 
     //TODO: Think about making update protected, and befriending ECS
 
-    virtual void SetSignature() = 0;
+    virtual void SetSignature(Signature& systemSignature) = 0;
     virtual void Update() = 0;
 
     void OnEntityDestroyed(const EntityId entity)
@@ -53,6 +53,8 @@ public:
 
 protected:
     std::unordered_set<EntityId> entities;
-    Signature systemSignature;
     ComponentManager* compManager;
+
+private: 
+    Signature systemSignature;
 };

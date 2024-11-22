@@ -137,7 +137,7 @@ protected:
     class EmptySys : public System
     {
     public:
-        void SetSignature() override{}
+        void SetSignature(Signature&) override{}
         void Update() override {}
     };
 
@@ -149,7 +149,7 @@ protected:
             return entities.size();
         }
         
-        void SetSignature() override
+        void SetSignature(Signature& systemSignature) override
         {
             systemSignature.set(compManager->CompId<Position>());
         }
@@ -165,7 +165,7 @@ protected:
             return entities.size();
         }
         
-        void SetSignature() override
+        void SetSignature(Signature& systemSignature) override
         {
             systemSignature.set(compManager->CompId<Position>());
             systemSignature.set(compManager->CompId<Rotation>());
@@ -275,7 +275,7 @@ protected:
     class DummySys1 : public System
     {
     public:
-        void SetSignature() override
+        void SetSignature(Signature& systemSignature) override
         {
             systemSignature.set(compManager->CompId<Position>());
         }
@@ -296,7 +296,7 @@ protected:
     {
     public:
         
-        void SetSignature() override
+        void SetSignature(Signature& systemSignature) override
         {
             systemSignature.set(compManager->CompId<Position>());
             systemSignature.set(compManager->CompId<Rotation>());
