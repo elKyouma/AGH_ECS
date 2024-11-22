@@ -4,6 +4,7 @@
 #include "System.hpp"
 #include "ECS.cpp"
 #include "Types.hpp"
+#include <span>
 #include <typeindex>
 
 class ComponentPoolTest : public testing::Test
@@ -224,7 +225,37 @@ TEST_F(SystemTest, DeletingEntity)
 class ECSTest : public testing::Test
 {
 protected:
-     struct Position
+    std::vector<EntityId> CreateEntitiesArray(ECS& ecs, int N)
+    {
+        std::vector<EntityId> entities(N);
+        for(EntityId i = 0; i < N; i++)
+            entities[i] = ecs.CreateEntity();
+        
+        return entities;
+    }
+
+    template<typename Component>
+    void AddComponents(ECS& ecs, std::span<EntityId> entities)
+    {
+        for(const auto ent : entities)
+            ecs.AddComponent<Component>(ent);
+    }
+
+    template<typename Component>
+    void DeleteComponents(ECS& ecs, std::span<EntityId> entities)
+    {
+        for(const auto ent : entities)
+            ecs.DeleteComponent<Component>(ent);
+    }
+
+    void DestroyEntities(ECS& ecs, std::span<EntityId> entities)
+    {
+        for(const auto ent : entities)
+            ecs.DestroyEntity(ent);
+    }
+
+
+    struct Position
     {
         double x = 0.0;
         double y = 0.0;
@@ -346,9 +377,9 @@ TEST_F(ECSTest, SystemManipulation)
     auto& pos2 = ecs.AddComponent<Position>(ent2);
     auto& rot2 = ecs.AddComponent<Rotation>(ent2);
 
-    ASSERT_NO_THROW(ecs.RegisterSystem<DummySys1>()) << "Can not register system (DummySys1)";
+    EXPECT_NO_THROW(ecs.RegisterSystem<DummySys1>()) << "Can not register system (DummySys1)";
     EXPECT_ANY_THROW(ecs.RegisterSystem<DummySys1>()) << "Registered already existing system";
-    ASSERT_NO_THROW(ecs.RegisterSystem<DummySys2>()) << "Can not register component pool (DummySys2)";
+    EXPECT_NO_THROW(ecs.RegisterSystem<DummySys2>()) << "Can not register component pool (DummySys2)";
 
     ecs.UpdateSystems();
 
@@ -357,3 +388,51 @@ TEST_F(ECSTest, SystemManipulation)
     EXPECT_DOUBLE_EQ(pos2.x, 3.0) << "2";
     EXPECT_DOUBLE_EQ(rot2.deg, 2.0) << "3";
 }
+
+TEST_F(ECSTest, MultipleDeletionHandling)
+{
+    ECS ecs;
+    auto entities = CreateEntitiesArray(ecs, 100);
+
+    ecs.RegisterComponentPool<Position>();
+    ecs.RegisterComponentPool<Rotation>();
+    
+    
+    //POS: 0-90
+    //ROT: 30-80 
+    AddComponents<Position>(ecs, std::span<EntityId>(entities.begin(), 91));
+    AddComponents<Rotation>(ecs, std::span<EntityId>(entities.begin() + 30, 51));
+    
+    //POS: 0-10; 40-90
+    //ROT: 60-80
+    DeleteComponents<Position>(ecs, std::span<EntityId>(entities.begin() + 10, 30));
+    DeleteComponents<Rotation>(ecs, std::span<EntityId>(entities.begin() + 30, 30));
+    
+    //ENT: 0-59, 72-100
+    //POS: 0-10; 40-59; 72-90
+    //ROT: 71-80
+    int numberOfDestroyedEnts = 12;
+    DestroyEntities(ecs, std::span<EntityId>(entities.begin() + 60, numberOfDestroyedEnts));
+    
+    for(EntityId id = 40; id <= 90; id++)
+        if(id >= 60 && id <= 71)
+            EXPECT_ANY_THROW(ecs.GetComponent<Position>(id)); //non existing ent
+        else
+            EXPECT_NO_THROW(ecs.GetComponent<Position>(id)); 
+
+    for(EntityId id = 0; id < 100; id++)
+        if(id >= 72 && id <= 80)
+            EXPECT_NO_THROW(ecs.GetComponent<Rotation>(id));
+        else
+            EXPECT_ANY_THROW(ecs.GetComponent<Rotation>(id)); 
+
+    
+    
+    auto newEnts = CreateEntitiesArray(ecs, 30);
+    for(int i = 0; i < 30; i++)
+        if(i < numberOfDestroyedEnts)
+            EXPECT_EQ(newEnts[i], 71 - i);
+        else
+            EXPECT_EQ(newEnts[i], 100 + i - numberOfDestroyedEnts);
+}
+
