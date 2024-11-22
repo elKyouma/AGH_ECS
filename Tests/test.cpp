@@ -2,7 +2,7 @@
 #include <gtest/gtest.h>
 #include "Component.hpp"
 #include "System.hpp"
-#include "ECS.cpp"
+#include "ECS.hpp"
 #include "Types.hpp"
 #include <span>
 #include <typeindex>
