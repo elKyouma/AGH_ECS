@@ -1,9 +1,9 @@
 #pragma once
-
 #include <array>
 #include <memory>
 #include <typeindex>
 #include "Component.hpp"
+#include "Types.hpp"
 
 class ComponentManager
 {
@@ -75,7 +75,7 @@ public:
 
     void DestroyAllComponents(const EntityId entity)
     {
-        for(int i = 0; i < numberOfComponentPools; i++)
+        for(ComponentPoolId i = 0; i < numberOfComponentPools; i++)
             components[i]->TryDeleteComponent(entity);
     }
 

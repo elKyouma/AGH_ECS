@@ -90,7 +90,7 @@ public:
     Component& operator[] (const EntityId entity);
 
 private:
-    std::array<Component, MAX_COMPONENT_COUNT> components;
+    std::array<Component, MAX_ENTITY_COUNT> components;
     std::unordered_map<EntityId, ComponentId> entityToComponentId;
     std::stack<ComponentId> availableIds; 
     //TODO: check is it really a good idea    

@@ -11,7 +11,6 @@ struct BenchmarkData
 
 uint64_t rdtsc()
 {
-    uint64_t tick1, tick2; //unsigned 64 bit quantity
     unsigned c,d;
     asm volatile("rdtsc" : "=a" (c), "=d" (d)); //assembly code running the instruction rdtsc
     return (((uint64_t)c) | (((uint64_t)d) << 32)); // calculating the tick value.
