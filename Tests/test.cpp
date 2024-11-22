@@ -3,8 +3,6 @@
 #include "System.hpp"
 #include "ECS.cpp"
 #include "Types.hpp"
-#include <bitset>
-#include <limits>
 #include <typeindex>
 
 class ComponentPoolTest : public testing::Test
