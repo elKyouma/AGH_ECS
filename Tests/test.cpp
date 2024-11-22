@@ -1,3 +1,4 @@
+#include <X11/extensions/randr.h>
 #include <gtest/gtest.h>
 #include "Component.hpp"
 #include "System.hpp"
@@ -103,13 +104,16 @@ class SystemTest : public testing::Test
 protected:
     void SetUp() override
     {
-        typeToId[std::type_index(typeid(Position))] = 0;
-        typeToId[std::type_index(typeid(Rotation))] = 1;
+        compManager.RegisterComponentPool<Position>();
+        compManager.RegisterComponentPool<Rotation>();
         
-        signatures[0].set(typeToId[std::type_index(typeid(Position))]);
-        signatures[0].set(typeToId[std::type_index(typeid(Rotation))]);
+        compManager.AddComponent<Position>(0);
+        compManager.AddComponent<Rotation>(0);
+        signatures[0].set(compManager.CompId<Position>());
+        signatures[0].set(compManager.CompId<Rotation>());
         
-        signatures[1].set(typeToId[std::type_index(typeid(Rotation))]);
+        signatures[1].set(compManager.CompId<Rotation>());
+        compManager.AddComponent<Rotation>(1);
     }
 
     struct Position
@@ -132,9 +136,8 @@ protected:
     class EmptySys : public System
     {
     public:
-        void SetSignature(std::unordered_map<std::type_index, ComponentPoolId>& compToId) override{}
-        void Update(std::unordered_map<std::type_index, ComponentPoolId>& typeToCompId, 
-                        std::array<std::unique_ptr<IComponentPool>, MAX_COMPONENT_COUNT>& components) override {}
+        void SetSignature() override{}
+        void Update() override {}
     };
 
     class DummySys1 : public System
@@ -145,13 +148,12 @@ protected:
             return entities.size();
         }
         
-        void SetSignature(std::unordered_map<std::type_index, ComponentPoolId>& compToId) override
+        void SetSignature() override
         {
-            systemSignature.set(compToId[std::type_index(typeid(Position))]);
+            systemSignature.set(compManager->CompId<Position>());
         }
 
-        void Update(std::unordered_map<std::type_index, ComponentPoolId>& typeToCompId, 
-                        std::array<std::unique_ptr<IComponentPool>, MAX_COMPONENT_COUNT>& components) override {}
+        void Update() override {}
     };
     
     class DummySys2 : public System
@@ -162,16 +164,16 @@ protected:
             return entities.size();
         }
         
-        void SetSignature(std::unordered_map<std::type_index, ComponentPoolId>& compToId) override
+        void SetSignature() override
         {
-            systemSignature.set(compToId[std::type_index(typeid(Position))]);
-            systemSignature.set(compToId[std::type_index(typeid(Rotation))]);
+            systemSignature.set(compManager->CompId<Position>());
+            systemSignature.set(compManager->CompId<Rotation>());
         }
 
-        void Update(std::unordered_map<std::type_index, ComponentPoolId>& typeToCompId, 
-                        std::array<std::unique_ptr<IComponentPool>, MAX_COMPONENT_COUNT>& components) override {}
+        void Update() override {}
     };
 
+    ComponentManager compManager{};
     std::array<Signature, MAX_ENTITY_COUNT> signatures;
     std::unordered_map<std::type_index, uint32_t> typeToId;
 };
@@ -179,10 +181,9 @@ protected:
 TEST_F(SystemTest, SystemInitialization)
 {
     EmptySys sys1;
-    EXPECT_ANY_THROW(sys1.Init(signatures, typeToId));
-
+    EXPECT_ANY_THROW(sys1.Init(signatures, &compManager));
     DummySys2 sys2;
-    sys2.Init(signatures, typeToId);
+    sys2.Init(signatures, &compManager);
 
     EXPECT_EQ(sys2.EntitySize(), 1) << "Wrong entity count";
     EXPECT_TRUE(sys2.CheckIfEntitySubscribed(0)) << "Entity with right signature unsubscribed";
@@ -193,7 +194,7 @@ TEST_F(SystemTest, SystemInitialization)
 TEST_F(SystemTest, ChangingEntitySignature)
 {
     DummySys2 sys;
-    sys.Init(signatures, typeToId);
+    sys.Init(signatures, &compManager);
 
     signatures[1].set(typeToId[std::type_index(typeid(Position))]);
     sys.OnEntitySignatureChanged(1, signatures[1]);
@@ -212,7 +213,7 @@ TEST_F(SystemTest, ChangingEntitySignature)
 TEST_F(SystemTest, DeletingEntity)
 {
     DummySys2 sys;
-    sys.Init(signatures, typeToId);
+    sys.Init(signatures, &compManager);
     EXPECT_ANY_THROW(sys.OnEntityDestroyed(2)) << "Deleted non-existent entity";
 
     sys.OnEntityDestroyed(0);
@@ -243,19 +244,16 @@ protected:
     class DummySys1 : public System
     {
     public:
-        
-        void SetSignature(std::unordered_map<std::type_index, ComponentPoolId>& compToId) override
+        void SetSignature() override
         {
-            systemSignature.set(compToId[std::type_index(typeid(Position))]);
+            systemSignature.set(compManager->CompId<Position>());
         }
 
-        void Update(std::unordered_map<std::type_index, ComponentPoolId>& typeToCompId,
-                    std::array<std::unique_ptr<IComponentPool>, MAX_COMPONENT_COUNT>& components) override 
+        void Update() override 
         {
             for(EntityId ent : entities)
             {
-                auto& pos = dynamic_cast<ComponentPool<Position>*>(
-                    components[typeToCompId[std::type_index(typeid(Position))]].get())->GetComponent(ent);
+                auto& pos = compManager->GetComponent<Position>(ent);
 
                 pos.x += 1.0;
                 pos.y += 1.0;
@@ -267,22 +265,18 @@ protected:
     {
     public:
         
-        void SetSignature(std::unordered_map<std::type_index, ComponentPoolId>& compToId) override
+        void SetSignature() override
         {
-            systemSignature.set(compToId[std::type_index(typeid(Position))]);
-            systemSignature.set(compToId[std::type_index(typeid(Rotation))]);
+            systemSignature.set(compManager->CompId<Position>());
+            systemSignature.set(compManager->CompId<Rotation>());
         }
 
-        void Update(std::unordered_map<std::type_index, ComponentPoolId>& typeToCompId,
-                    std::array<std::unique_ptr<IComponentPool>, MAX_COMPONENT_COUNT>& components) override 
+        void Update() override 
         {
             for(EntityId ent : entities)
             {
-                auto& pos = dynamic_cast<ComponentPool<Position>*>(
-                    components[typeToCompId[std::type_index(typeid(Position))]].get())->GetComponent(ent);
-                
-                auto& rot = dynamic_cast<ComponentPool<Rotation>*>(
-                    components[typeToCompId[std::type_index(typeid(Rotation))]].get())->GetComponent(ent);
+                auto& pos = compManager->GetComponent<Position>(ent);
+                auto& rot = compManager->GetComponent<Rotation>(ent);
 
                 pos.x += 2.0;
                 pos.y += 2.0;

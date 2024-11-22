@@ -4,96 +4,74 @@
 #include <typeindex>
 #include <unordered_map>
 
-#include "Component.hpp"
+#include "ComponentManager.hpp"
 #include "Types.hpp"
 #include "System.hpp"
 
 class ECS
 {
-private:
-    template<typename Component>
-    constexpr ComponentPoolId CompId()
-    {
-        ASSERT(typeToCompId.find(std::type_index(typeid(Component))) != typeToCompId.end());
-        return typeToCompId[std::type_index(typeid(Component))];
-    }
-
-    template<typename System>
-    constexpr ComponentPoolId SysId()
-    {
-        ASSERT(typeToSysId.find(std::type_index(typeid(System))) == typeToSysId.end());
-        return typeToSysId[std::type_index(typeid(System))];
-    }
-    
-    template<typename Component>
-    ComponentPool<Component>* GetComponentPool()
-    {
-        return dynamic_cast<ComponentPool<Component>*>
-            (components[CompId<Component>()].get());
-    }
-
 public:
     template <typename System>
     void RegisterSystem()
     {
-        SysId<System>();
+        ASSERT(typeToSysId.find(std::type_index(typeid(System))) == typeToSysId.end());
+        
         typeToSysId[std::type_index(typeid(System))] = numberOfSystems;
         systems[numberOfSystems] = std::make_unique<System>();
-        systems[numberOfSystems]->Init(signatures, typeToCompId);
+        systems[numberOfSystems]->Init(signatures, &compManager);
         numberOfSystems++;
     }
 
     template <typename Component>
     void RegisterComponentPool()
     {
-        ASSERT(typeToCompId.find(std::type_index(typeid(Component))) == typeToCompId.end());
-        typeToCompId[std::type_index(typeid(Component))] = numberOfComponentPools;
-        components[numberOfComponentPools] = std::make_unique<ComponentPool<Component>>();
-        numberOfComponentPools++;
+        compManager.RegisterComponentPool<Component>();
     }
 
     template <typename Component>
     Component& GetComponent(const EntityId entity)
     {
-        ASSERT(signatures[entity].test(CompId<Component>()));
-        auto comp = GetComponentPool<Component>();
-        return comp->GetComponent(entity);
+        ASSERT(signatures[entity].test(compManager.CompId<Component>()));
+        return compManager.GetComponent<Component>(entity);
     }
     
     template <typename Component>
     const Component& GetComponent(const EntityId entity) const
     {
-        ASSERT(signatures[entity].test(CompId<Component>()));
-        const auto comp = GetComponentPool<Component>(); 
-        return comp->GetComponent(entity);
+        ASSERT(signatures[entity].test(compManager.CompId<Component>()));
+        return compManager.GetComponent<Component>(entity);
     }
 
     template <typename Component>
     Component& AddComponent(const EntityId entity)
     {
-        auto comp = GetComponentPool<Component>();
-        signatures[entity].set(CompId<Component>());
+        auto& comp = compManager.AddComponent<Component>(entity);
+        signatures[entity].set(compManager.CompId<Component>());
         for(SystemId sysId = 0; sysId < numberOfSystems; sysId++)
             systems[sysId]->OnEntitySignatureChanged(entity, signatures[entity]);
-        return comp->AddComponent(entity);
+        return comp;
     }
     
     template <typename Component>
     void DeleteComponent(const EntityId entity)
     {
-        ASSERT(signatures[entity].test(CompId<Component>()));
-        auto comp = GetComponentPool<Component>();
-        signatures[entity].reset(CompId<Component>());
-        comp->DeleteComponent(entity);       
+        ASSERT(signatures[entity].test(compManager.CompId<Component>()));
+        signatures[entity].reset(compManager.CompId<Component>());
+        for(SystemId sysId = 0; sysId < numberOfSystems; sysId++)
+            systems[sysId]->OnEntitySignatureChanged(entity, signatures[entity]);
+        
+        compManager.DeleteComponent<Component>(entity);       
     }
 
     template <typename Component>
     void TryDeleteComponent(const EntityId entity)
     {
-        ASSERT(signatures[entity].test(CompId<Component>()));
-        auto comp = GetComponentPool<Component>();
-        signatures[entity].reset(CompId<Component>());
-        comp->TryDeleteComponent(entity);       
+        ASSERT(signatures[entity].test(compManager.CompId<Component>()));
+        signatures[entity].reset(compManager.CompId<Component>());
+        for(SystemId sysId = 0; sysId < numberOfSystems; sysId++)
+            systems[sysId]->OnEntitySignatureChanged(entity, signatures[entity]);
+        
+        compManager.TryDeleteComponent<Component>(entity);       
     }
 
     ECS();
@@ -103,17 +81,12 @@ public:
     void UpdateSystems();
 
 private:
-    std::array<std::unique_ptr<IComponentPool>, MAX_COMPONENT_COUNT> components;
     std::array<std::unique_ptr<System>, MAX_SYSTEM_COUNT> systems;
+    std::unordered_map<std::type_index, SystemId> typeToSysId;
+    SystemId numberOfSystems = 0;
+   
+    ComponentManager compManager{};
 
     std::stack<EntityId> availableEntityIds;
-    
-    std::unordered_map<std::type_index, ComponentPoolId> typeToCompId;
-    std::unordered_map<std::type_index, SystemId> typeToSysId;
-    
     std::array<Signature, MAX_ENTITY_COUNT> signatures;
-    ComponentPoolId numberOfComponentPools = 0;
-    ComponentPoolId numberOfSystems = 0;
-
-
 };

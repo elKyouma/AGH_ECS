@@ -15,16 +15,17 @@ EntityId ECS::CreateEntity()
 
 void ECS::DestroyEntity(const EntityId entity)
 {
-    for(ComponentPoolId compId = 0; compId < numberOfComponentPools; compId++)
-        components[compId]->TryDeleteComponent(entity);
-
     signatures[entity] = 0u;
+    for(SystemId sysId = 0; sysId < numberOfSystems; sysId++)
+        systems[sysId]->OnEntityDestroyed(entity);        
+
+    compManager.DestroyAllComponents(entity);
     availableEntityIds.push(entity);
 }
     
 void ECS::UpdateSystems()
 {
     for(SystemId id = 0; id < numberOfSystems; id++)
-        systems[id].get()->Update(typeToCompId, components);
+        systems[id].get()->Update();
 }
 
