@@ -10,7 +10,7 @@ public:
     ParticleSystem(SDL_Renderer* renderer) : renderer(renderer) {}
     void Init();
     void Update();
-    void Render();
+    void Render() ;
     void Clean();
 private:
     SDL_Renderer* renderer;

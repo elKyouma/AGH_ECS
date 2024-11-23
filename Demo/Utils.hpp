@@ -7,3 +7,5 @@
 #define HEIGHT 1024
 
 SDL_Texture* LoadTextureFromFile(SDL_Renderer* renderer, std::string path);
+
+int Rand(int minv, int maxv);

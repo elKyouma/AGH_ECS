@@ -1,6 +1,7 @@
 #include "Utils.hpp"
 #include "SDL3/SDL_surface.h"
 #include "SDL3_image/SDL_image.h"
+#include <cstdlib>
 
 SDL_Texture* LoadTextureFromFile(SDL_Renderer* renderer, std::string path)
 {
@@ -20,4 +21,9 @@ SDL_Texture* LoadTextureFromFile(SDL_Renderer* renderer, std::string path)
 
 	SDL_DestroySurface(surface);
     return texture;
+}
+
+int Rand(int minv, int maxv)
+{
+    return std::rand() % maxv + minv;
 }

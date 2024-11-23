@@ -1,4 +1,5 @@
 #include "ParticleSystem.hpp"
+#include "Utils.hpp"
 
 void ParticleSystem::Init()
 {
@@ -8,7 +9,7 @@ void ParticleSystem::Init()
 
     for(int i=0; i < numberOfParticles; i++)
     {
-        particles.emplace_back(0.0 + 10*i, 0.0, particleTexture, renderer);
+        particles.emplace_back(1.0 * Rand(-300, 300), 1.0 * Rand(-300, 300), particleTexture, renderer);
     }
 }
 
