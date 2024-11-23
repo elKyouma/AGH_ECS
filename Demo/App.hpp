@@ -1,7 +1,9 @@
 #pragma once
+#include "ParticleSystem.hpp"
 #include "SDL3/SDL_render.h"
 #include <chrono>
 #include "Particle.hpp"
+#include "ParticleSystem.hpp"
 #include <memory>
 
 class App
@@ -17,7 +19,6 @@ private:
     void Initialise();
     void Clean();
 
-	SDL_Texture* texture;
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 	SDL_Event event;
@@ -25,4 +26,5 @@ private:
     double deltaTime;
     std::chrono::time_point<std::chrono::high_resolution_clock> prevFrameStart{std::chrono::high_resolution_clock::now()};
     std::unique_ptr<Particle> particle;
+    std::unique_ptr<ParticleSystem> particleSystem;
 };

@@ -1,4 +1,5 @@
 #include "App.hpp"
+#include "ParticleSystem.hpp"
 #include "SDL3_image/SDL_image.h"
 #include "Utils.hpp"
 #include <SDL3/SDL.h>
@@ -27,15 +28,13 @@ App::~App()
 
 void App::Initialise()
 {
-    std::string path = ART_PATH;
-	path += "gandalf.jpg";
-    texture = LoadTextureFromFile(renderer, path);
-    particle = std::make_unique<Particle>(0.0, 0.0, texture, renderer);
+    particleSystem = std::make_unique<ParticleSystem>(renderer);
+    particleSystem->Init();
 }
 
 void App::Clean()
 { 
-	SDL_DestroyTexture(texture);
+    particleSystem->Clean();
 }
 
 bool App::ProcessInputs()
@@ -57,13 +56,14 @@ void App::Update()
         deltaTime = std::chrono::duration_cast<std::chrono::nanoseconds>(now - prevFrameStart).count() / 1.e9;
         prevFrameStart = now;
     } 
+
+    particleSystem->Update();
 }
 
 void App::Render()
 {
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0x00);
 	SDL_RenderClear(renderer);
-	/*SDL_RenderTexture(renderer, texture, NULL, NULL);*/
-    particle->Render();
+    particleSystem->Render();
 	SDL_RenderPresent(renderer);
 }
