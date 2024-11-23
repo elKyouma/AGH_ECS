@@ -7,15 +7,16 @@
 Particle::Particle(float startPosX, float startPosY, SDL_Texture* texture, SDL_Renderer* renderer)
     : posX(startPosX), posY(startPosY), texture(texture), renderer(renderer) 
 {
-    velX = Rand(-10, 10);
-    velY = Rand(-10, 10);
+    timer.Reset();
+    velX = Rand(-5, 5);
+    velY = Rand(-5, 5);
 }
 
 void Particle::Update()
-{
-    velY -= 0.1;
-    posX += velX;
-    posY += velY;
+{       
+    double dt = timer.Measure();
+    posX += velX * dt;
+    posY -= velY * dt - (3.0 * dt * dt / 2.0);
 }
 
 void Particle::Render()
