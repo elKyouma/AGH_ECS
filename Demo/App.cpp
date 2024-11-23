@@ -2,6 +2,7 @@
 #include "SDL3_image/SDL_image.h"
 #include "Utils.hpp"
 #include <SDL3/SDL.h>
+#include <chrono>
 #include <string>
 
 
@@ -49,6 +50,11 @@ bool App::ProcessInputs()
 
 void App::Update()
 {
+    {
+        auto now = std::chrono::high_resolution_clock::now();
+        deltaTime = std::chrono::duration_cast<std::chrono::nanoseconds>(now - prevFrameStart).count() / 1.e9;
+        prevFrameStart = now;
+    } 
 }
 
 void App::Render()

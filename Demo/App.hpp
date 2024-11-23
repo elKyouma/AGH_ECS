@@ -1,5 +1,6 @@
 #pragma once
 #include "SDL3/SDL_render.h"
+#include <chrono>
 
 class App
 {
@@ -18,4 +19,7 @@ private:
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 	SDL_Event event;
+
+    double deltaTime;
+    std::chrono::time_point<std::chrono::high_resolution_clock> prevFrameStart{std::chrono::high_resolution_clock::now()};
 };
