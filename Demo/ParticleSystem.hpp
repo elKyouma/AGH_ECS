@@ -16,5 +16,5 @@ private:
     SDL_Renderer* renderer;
     SDL_Texture* particleTexture;
     std::vector<Particle> particles;
-    int numberOfParticles = 100;
+    int numberOfParticles = 10000;
 };
