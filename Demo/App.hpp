@@ -1,6 +1,8 @@
 #pragma once
 #include "SDL3/SDL_render.h"
 #include <chrono>
+#include "Particle.hpp"
+#include <memory>
 
 class App
 {
@@ -22,4 +24,5 @@ private:
 
     double deltaTime;
     std::chrono::time_point<std::chrono::high_resolution_clock> prevFrameStart{std::chrono::high_resolution_clock::now()};
+    std::unique_ptr<Particle> particle;
 };

@@ -3,6 +3,7 @@
 #include "Utils.hpp"
 #include <SDL3/SDL.h>
 #include <chrono>
+#include <memory>
 #include <string>
 
 
@@ -10,7 +11,7 @@ App::App()
 {
 	if (!SDL_Init(SDL_INIT_VIDEO))
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
-	if (!SDL_CreateWindowAndRenderer("Hello SDL", 320, 240, SDL_WINDOW_RESIZABLE, &window, &renderer))
+	if (!SDL_CreateWindowAndRenderer("Hello SDL", WIDTH, HEIGHT, SDL_WINDOW_RESIZABLE, &window, &renderer))
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window and renderer: %s", SDL_GetError()); 
 
     Initialise();
@@ -29,6 +30,7 @@ void App::Initialise()
     std::string path = ART_PATH;
 	path += "gandalf.jpg";
     texture = LoadTextureFromFile(renderer, path);
+    particle = std::make_unique<Particle>(0.0, 0.0, texture, renderer);
 }
 
 void App::Clean()
@@ -61,6 +63,7 @@ void App::Render()
 {
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0x00);
 	SDL_RenderClear(renderer);
-	SDL_RenderTexture(renderer, texture, NULL, NULL);
+	/*SDL_RenderTexture(renderer, texture, NULL, NULL);*/
+    particle->Render();
 	SDL_RenderPresent(renderer);
 }
