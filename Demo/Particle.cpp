@@ -2,10 +2,20 @@
 #include "SDL3/SDL_rect.h"
 #include "SDL3/SDL_render.h"
 #include "SDL3_image/SDL_image.h"
+#include "Utils.hpp"
+
+Particle::Particle(float startPosX, float startPosY, SDL_Texture* texture, SDL_Renderer* renderer)
+    : posX(startPosX), posY(startPosY), texture(texture), renderer(renderer) 
+{
+    velX = Rand(-10, 10);
+    velY = Rand(-10, 10);
+}
 
 void Particle::Update()
 {
-
+    velY -= 0.1;
+    posX += velX;
+    posY += velY;
 }
 
 void Particle::Render()

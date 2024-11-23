@@ -9,14 +9,17 @@ void ParticleSystem::Init()
 
     for(int i=0; i < numberOfParticles; i++)
     {
-        particles.emplace_back(1.0 * Rand(-300, 300), 1.0 * Rand(-300, 300), particleTexture, renderer);
+        particles.emplace_back(
+            1.0 * Rand(-300, 300), 
+            1.0 * Rand(-300, 300), 
+            particleTexture, renderer);
     }
 }
 
 void ParticleSystem::Update()
 {
     for(auto& particle : particles)
-        particle.Render();
+        particle.Update();
 }
 
 void ParticleSystem::Render()
