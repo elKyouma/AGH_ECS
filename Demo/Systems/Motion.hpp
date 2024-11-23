@@ -11,14 +11,14 @@ class Motion : public System
         systemSign.set(compManager->CompId<Velocity>());
     }
 
-    virtual void Update() override
+    virtual void Update(const float deltaTime) override
     {
         auto& positions = compManager->GetComponentPool<Position>();
         auto& velocity = compManager->GetComponentPool<Velocity>();
         for(const auto ent : entities)
         {
-            positions.GetComponent(ent).x += velocity.GetComponent(ent).vel_x;
-            positions.GetComponent(ent).y += velocity.GetComponent(ent).vel_y;
+            positions.GetComponent(ent).x += velocity.GetComponent(ent).vel_x * deltaTime;
+            positions.GetComponent(ent).y += velocity.GetComponent(ent).vel_y * deltaTime;
         }
     }
 };

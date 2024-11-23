@@ -184,6 +184,7 @@ protected:
             systemSignature.set(compManager->CompId<Position>());
             systemSignature.set(compManager->CompId<Rotation>());
         }
+
     };
 
     ComponentManager compManager{};

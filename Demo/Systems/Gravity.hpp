@@ -11,13 +11,13 @@ class Gravity : public System
         systemSign.set(compManager->CompId<Mass>());
     }
 
-    virtual void Update() override
+    virtual void Update(const float deltaTime) override
     {
         auto& velocity = compManager->GetComponentPool<Velocity>();
         auto& mass = compManager->GetComponentPool<Mass>();
         
         for(const auto ent : entities)
-            velocity.GetComponent(ent).vel_y += gravityForce * mass.GetComponent(ent).mass;
+            velocity.GetComponent(ent).vel_y += gravityForce * mass.GetComponent(ent).mass * deltaTime;
     }
 
 private:

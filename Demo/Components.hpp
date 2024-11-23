@@ -1,18 +1,19 @@
+#pragma once
 #include "SDL3/SDL_render.h"
 
 struct Position
 {
-    double x, y;
+    float x = 0.0, y = 0.0;
 };
 
 struct Mass
 {
-    double mass;
+    float mass = 1.0;
 };
 
 struct Velocity
 {
-    double vel_x, vel_y;   
+    float vel_x = 0.0, vel_y = 0.0;   
 };
 
 struct Color
@@ -22,7 +23,7 @@ struct Color
 
 struct Image
 {
-    SDL_Texture* texture;
+    SDL_Texture* texture = nullptr;
 };
 
 struct AnimationSheet

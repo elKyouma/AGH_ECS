@@ -56,16 +56,16 @@ public:
     {
         if(entityToComponentId.find(entity) != entityToComponentId.end())
             return {components[entity]};
-        else
-            return {};
+        
+        return {};
     }
     
     std::optional<std::reference_wrapper<const Component>> TryGetComponent(const EntityId entity) const
     { 
         if(entityToComponentId.find(entity) != entityToComponentId.end())
             return {components[entity]};
-        else
-            return {};
+        
+        return {};
     }
 
 
