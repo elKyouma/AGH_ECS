@@ -8,15 +8,24 @@ Particle::Particle(float startPosX, float startPosY, SDL_Texture* texture, SDL_R
     : posX(startPosX), posY(startPosY), texture(texture), renderer(renderer) 
 {
     timer.Reset();
-    velX = Rand(-5, 5);
-    velY = Rand(-5, 5);
+    velX = Rand(-5.0, 5.0);
+    velY = Rand(0.0, 5.0);
+    TTL = Rand(50.0, 200.0);
 }
 
 void Particle::Update()
 {       
     double dt = timer.Measure();
+    float aX = 0.05;
+    if(velX > 0.0) aX = -0.05;
+    else if(velX == 0.0) aX = 0.0;
+
+    velX += aX * dt;
+
     posX += velX * dt;
-    posY -= velY * dt - (3.0 * dt * dt / 2.0);
+    posY -= velY * dt + (2.0 * dt * dt / 2.0);
+
+    TTL -= dt;
 }
 
 void Particle::Render()
@@ -24,8 +33,8 @@ void Particle::Render()
     SDL_FRect rect; 
     rect.x = posX + WIDTH / 2.0 - 50; 
     rect.y = posY + HEIGHT / 2.0 - 50; 
-    rect.w = 100; 
-    rect.h = 100;
+    rect.w = 10; 
+    rect.h = 10;
 
     SDL_RenderTexture(renderer, texture, NULL, &rect);
 }

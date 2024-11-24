@@ -26,6 +26,14 @@ SDL_Texture* LoadTextureFromFile(SDL_Renderer* renderer, std::string path)
 int Rand(int minv, int maxv)
 {
     if(minv < 0)
-        return std::rand() % (2*maxv) + minv;
+        return std::rand() % (2 * maxv) + minv;
     return std::rand() % maxv + minv;
+}
+
+double Rand(double minv, double maxv)
+{
+    if(minv < 0.0)
+        return (std::rand() % static_cast<int>(2 * maxv * 100) + minv * 100) / 100.0;
+    
+    return (std::rand() % static_cast<int>(maxv * 100) + minv * 100) / 100.0;
 }

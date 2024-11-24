@@ -9,3 +9,4 @@
 SDL_Texture* LoadTextureFromFile(SDL_Renderer* renderer, std::string path);
 
 int Rand(int minv, int maxv);
+double Rand(double minv, double maxv);

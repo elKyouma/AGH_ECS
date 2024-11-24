@@ -10,6 +10,8 @@ public:
     Particle(float startPosX, float startPosY, SDL_Texture* texture, SDL_Renderer* renderer);
     void Update();
     void Render();
+
+    float TTL = 100.0;
 private:
     float posX = .0;
     float posY = .0;
