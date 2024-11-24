@@ -10,7 +10,7 @@ Particle::Particle(float startPosX, float startPosY, SDL_Texture* texture, SDL_R
     timer.Reset();
     velX = Rand(-5.0, 5.0);
     velY = Rand(0.0, 5.0);
-    TTL = Rand(50.0, 200.0);
+    TTL = Rand(50.0, 150.0);
 }
 
 void Particle::Update()

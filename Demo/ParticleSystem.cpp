@@ -1,5 +1,6 @@
 #include "ParticleSystem.hpp"
 #include "Utils.hpp"
+#include <cmath>
 #include <vector>
 
 void ParticleSystem::Init()
@@ -7,12 +8,15 @@ void ParticleSystem::Init()
     std::string path = ART_PATH;
 	path += "gandalf.jpg";
     particleTexture = LoadTextureFromFile(renderer, path);
-
+    
     for(int i=0; i < numberOfParticles; i++)
     {
+        float r = Rand(0.0, 50.0);
+        float fi = Rand(0.0, 359.0);
+
         particles.emplace_back(
-            1.0 * Rand(-100.0, 100.0), 
-            1.0 * Rand(-100.0, 100.0), 
+            r * std::cos(fi), 
+            400.0 + r * std::sin(fi), 
             particleTexture, renderer);
     }
 }
@@ -25,10 +29,13 @@ void ParticleSystem::Update()
     {
         if (particles[i].TTL <= 0)
         {
+            float r = Rand(0.0, 50.0);
+            float fi = Rand(0.0, 359.0);
+            
             particles.erase(particles.begin() + i);
             particles.emplace_back(
-            1.0 * Rand(-100.0, 100.0), 
-            1.0 * Rand(-100.0, 100.0), 
+            r * std::cos(fi), 
+            400.0 + r * std::sin(fi), 
             particleTexture, renderer);
         }
     }
