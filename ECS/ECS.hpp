@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <span>
 #include <stack>
 #include <typeindex>
 #include <unordered_map>
@@ -72,6 +73,24 @@ public:
             systems[sysId]->OnEntitySignatureChanged(entity, signatures[entity]);
         
         compManager.TryDeleteComponent<Component>(entity);       
+    }
+
+    template<typename Component, typename... ARGS>
+    void AddComponents(std::span<EntityId> entities, ARGS&&... args)
+    {
+        compManager.AddComponents<Component>(entities, args...);
+    }
+
+    template<typename Component>
+    void DeleteComponents(std::span<EntityId> entities)
+    {
+        compManager.DeleteComponents<Component>(entities);
+    }
+
+    void DestroyEntities(std::span<EntityId> entities)
+    {
+        for(const auto ent : entities)
+            DestroyEntity(ent);
     }
 
     ECS();

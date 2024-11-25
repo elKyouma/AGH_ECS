@@ -1,6 +1,7 @@
 #pragma once
 #include <array>
 #include <memory>
+#include <span>
 #include <typeindex>
 #include "Component.hpp"
 #include "Types.hpp"
@@ -81,6 +82,20 @@ public:
     {
         for(ComponentPoolId i = 0; i < numberOfComponentPools; i++)
             components[i]->TryDeleteComponent(entity);
+    }
+
+    template<typename Component, typename... ARGS>
+    void AddComponents(std::span<EntityId> entities, ARGS&&... args)
+    {
+        for(const auto ent : entities)
+            AddComponent<Component>(ent, args...);
+    }
+
+    template<typename Component>
+    void DeleteComponents(std::span<EntityId> entities)
+    {
+        for(const auto ent : entities)
+            DeleteComponent<Component>(ent);
     }
 
 private:   

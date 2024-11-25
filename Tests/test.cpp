@@ -1,10 +1,10 @@
 #include <X11/extensions/randr.h>
+#include <array>
 #include <gtest/gtest.h>
 #include "Component.hpp"
 #include "System.hpp"
 #include "ECS.hpp"
 #include "Types.hpp"
-#include <span>
 #include <typeindex>
 #include "ComponentManager.hpp"
 
@@ -251,26 +251,6 @@ protected:
         return entities;
     }
 
-    template<typename Component>
-    void AddComponents(ECS& ecs, std::span<EntityId> entities)
-    {
-        for(const auto ent : entities)
-            ecs.AddComponent<Component>(ent);
-    }
-
-    template<typename Component>
-    void DeleteComponents(ECS& ecs, std::span<EntityId> entities)
-    {
-        for(const auto ent : entities)
-            ecs.DeleteComponent<Component>(ent);
-    }
-
-    void DestroyEntities(ECS& ecs, std::span<EntityId> entities)
-    {
-        for(const auto ent : entities)
-            ecs.DestroyEntity(ent);
-    }
-
     struct Position
     {
         double x = 0.0;
@@ -365,6 +345,17 @@ TEST_F(ECSTest, CreateComponentWithArgs)
 
     EXPECT_DOUBLE_EQ(ecs.GetComponent<Position>(2).x, 5);
     EXPECT_DOUBLE_EQ(ecs.GetComponent<Position>(2).y, 6);
+    
+    std::array<EntityId, 90> ents;
+    for(int id = 0; id < 90; id++)
+        ents[id] = id + 4;
+    ecs.AddComponents<Position>(std::span(ents.begin(), ents.end()), 9, 7);
+
+    for(EntityId ent = 4; ent < 94; ent++)
+    {
+        EXPECT_DOUBLE_EQ(ecs.GetComponent<Position>(ent).x, 9);
+        EXPECT_DOUBLE_EQ(ecs.GetComponent<Position>(ent).y, 7);
+    }
 }
 
 TEST_F(ECSTest, EntityManipulation)
@@ -451,19 +442,19 @@ TEST_F(ECSTest, MultipleDeletionHandling)
     
     //POS: 0-90
     //ROT: 30-80 
-    AddComponents<Position>(ecs, std::span<EntityId>(entities.begin(), 91));
-    AddComponents<Rotation>(ecs, std::span<EntityId>(entities.begin() + 30, 51));
+    ecs.AddComponents<Position>(std::span<EntityId>(entities.begin(), 91));
+    ecs.AddComponents<Rotation>(std::span<EntityId>(entities.begin() + 30, 51));
     
     //POS: 0-10; 40-90
     //ROT: 60-80
-    DeleteComponents<Position>(ecs, std::span<EntityId>(entities.begin() + 10, 30));
-    DeleteComponents<Rotation>(ecs, std::span<EntityId>(entities.begin() + 30, 30));
+    ecs.DeleteComponents<Position>(std::span<EntityId>(entities.begin() + 10, 30));
+    ecs.DeleteComponents<Rotation>(std::span<EntityId>(entities.begin() + 30, 30));
     
     //ENT: 0-59, 72-100
     //POS: 0-10; 40-59; 72-90
     //ROT: 71-80
     int numberOfDestroyedEnts = 12;
-    DestroyEntities(ecs, std::span<EntityId>(entities.begin() + 60, numberOfDestroyedEnts));
+    ecs.DestroyEntities(std::span<EntityId>(entities.begin() + 60, numberOfDestroyedEnts));
     
     for(EntityId id = 40; id <= 90; id++)
         if(id >= 60 && id <= 71)
@@ -599,4 +590,15 @@ TEST_F(ComponentManagerTest, CreateComponentWithArgs)
 
     EXPECT_DOUBLE_EQ(compM.GetComponent<Position>(2).x, 5);
     EXPECT_DOUBLE_EQ(compM.GetComponent<Position>(2).y, 6);
+
+    std::array<EntityId, 90> ents;
+    for(int id = 0; id < 90; id++)
+        ents[id] = id + 4;
+
+    compM.AddComponents<Position>(std::span(ents.begin(), ents.end()), 9, 7);
+    for(EntityId ent = 4; ent < 94; ent++)
+    {
+        EXPECT_DOUBLE_EQ(compM.GetComponent<Position>(ent).x, 9);
+        EXPECT_DOUBLE_EQ(compM.GetComponent<Position>(ent).y, 7);
+    }
 }
