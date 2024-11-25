@@ -110,7 +110,8 @@ public:
 
     EntityId CreateEntity();
     void DestroyEntity(const EntityId entity);
-    void UpdateSystems();
+    void UpdateSystems(const float deltaTime);
+    void RenderSystems();
 
 private:
     std::array<std::unique_ptr<System>, MAX_SYSTEM_COUNT> systems;

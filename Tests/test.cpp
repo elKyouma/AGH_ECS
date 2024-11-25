@@ -155,7 +155,6 @@ protected:
     {
     public:
         void SetSignature(Signature&) override{}
-        void Update() override {}
     };
 
     class DummySys1 : public System
@@ -170,8 +169,6 @@ protected:
         {
             systemSignature.set(compManager->CompId<Position>());
         }
-
-        void Update() override {}
     };
     
     class DummySys2 : public System
@@ -187,8 +184,6 @@ protected:
             systemSignature.set(compManager->CompId<Position>());
             systemSignature.set(compManager->CompId<Rotation>());
         }
-
-        void Update() override {}
     };
 
     ComponentManager compManager{};
@@ -276,7 +271,7 @@ protected:
             systemSignature.set(compManager->CompId<Position>());
         }
 
-        void Update() override 
+        void Update(float deltaTime) override 
         {
             for(EntityId ent : entities)
             {
@@ -298,7 +293,7 @@ protected:
             systemSignature.set(compManager->CompId<Rotation>());
         }
 
-        void Update() override 
+        void Update(float deltaTime) override 
         {
             for(EntityId ent : entities)
             {
@@ -423,7 +418,7 @@ TEST_F(ECSTest, SystemManipulation)
     EXPECT_ANY_THROW(ecs.RegisterSystem<DummySys1>()) << "Registered already existing system";
     EXPECT_NO_THROW(ecs.RegisterSystem<DummySys2>()) << "Can not register component pool (DummySys2)";
 
-    ecs.UpdateSystems();
+    ecs.UpdateSystems(0.1);
 
 
     EXPECT_DOUBLE_EQ(pos1.x, 1.0) << "1";

@@ -22,7 +22,8 @@ public:
     //TODO: Think about making update protected, and befriending ECS
 
     virtual void SetSignature(Signature& systemSignature) = 0;
-    virtual void Update() = 0;
+    virtual void Update(const float deltaTime){}
+    virtual void Render(){}
 
     void OnEntityDestroyed(const EntityId entity)
     {

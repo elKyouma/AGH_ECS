@@ -23,9 +23,16 @@ void ECS::DestroyEntity(const EntityId entity)
     availableEntityIds.push(entity);
 }
     
-void ECS::UpdateSystems()
+void ECS::UpdateSystems(const float deltaTime)
 {
     for(SystemId id = 0; id < numberOfSystems; id++)
-        systems[id].get()->Update();
+        systems[id].get()->Update(deltaTime);
+}
+
+void ECS::RenderSystems()
+{
+    for(SystemId id = 0; id < numberOfSystems; id++)
+        systems[id].get()->Render();
+
 }
 
