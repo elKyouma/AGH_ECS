@@ -6,7 +6,9 @@
 #include "Types.hpp"
 
 class ComponentManager
-{
+{    
+    using ComponentPoolId = uint16_t;
+
 public:
     template<typename Component>
     constexpr ComponentPoolId CompId()
@@ -30,7 +32,7 @@ public:
     }
     
     template <typename Component>
-    void RegisterComponentPool(ComponentPoolId MAX_SIZE = MAX_ENTITY_COUNT)
+    void RegisterComponentPool(ComponentId MAX_SIZE = MAX_ENTITY_COUNT)
     {
         ASSERT(typeToCompId.find(std::type_index(typeid(Component))) == typeToCompId.end());
         typeToCompId[std::type_index(typeid(Component))] = numberOfComponentPools;
@@ -52,11 +54,13 @@ public:
         return comp.GetComponent(entity);
     }
 
-    template <typename Component>
-    Component& AddComponent(const EntityId entity)
+    template <typename Component, typename... ARGS>
+    Component& AddComponent(const EntityId entity, ARGS&&... args)
     {
-        auto& comp = GetComponentPool<Component>();
-        return comp.AddComponent(entity);
+        auto& compPool = GetComponentPool<Component>();
+        auto& comp = compPool.AddComponent(entity);
+        comp = Component(std::forward<ARGS>(args)...);
+        return comp;
     }
     
     template <typename Component>

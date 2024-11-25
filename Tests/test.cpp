@@ -33,13 +33,13 @@ TEST_F(ComponentPoolTest, AddingComponent) {
 TEST_F(ComponentPoolTest, CheckIfMaxSizeWorksCorrectly)
 {
     ComponentPool<Position> comp;
-    for(ComponentPoolId id = 0; id < MAX_ENTITY_COUNT; id++)
+    for(ComponentId id = 0; id < MAX_ENTITY_COUNT; id++)
         EXPECT_NO_THROW(comp.AddComponent(id));
 
     EXPECT_ANY_THROW(comp.AddComponent(MAX_ENTITY_COUNT));
 
     ComponentPool<Position> comp2(25);
-    for(ComponentPoolId id = 0; id < 25; id++)
+    for(ComponentId id = 0; id < 25; id++)
         EXPECT_NO_THROW(comp2.AddComponent(30 + id));
 
     EXPECT_ANY_THROW(comp2.AddComponent(3));
@@ -271,7 +271,6 @@ protected:
             ecs.DestroyEntity(ent);
     }
 
-
     struct Position
     {
         double x = 0.0;
@@ -348,6 +347,24 @@ TEST_F(ECSTest, CustomPoolSizesTest)
     EXPECT_NO_THROW(ecs.AddComponent<Rotation>(6));
     EXPECT_NO_THROW(ecs.AddComponent<Rotation>(7));
     EXPECT_ANY_THROW(ecs.AddComponent<Rotation>(2));
+}
+
+TEST_F(ECSTest, CreateComponentWithArgs)
+{
+    ECS ecs;
+    ecs.RegisterComponentPool<Position>();
+    ecs.AddComponent<Position>(0, 2, 3);
+    ecs.AddComponent<Position>(1);
+    ecs.AddComponent<Position>(2, 5, 6);
+    
+    EXPECT_DOUBLE_EQ(ecs.GetComponent<Position>(0).x, 2);
+    EXPECT_DOUBLE_EQ(ecs.GetComponent<Position>(0).y, 3);
+    
+    EXPECT_DOUBLE_EQ(ecs.GetComponent<Position>(1).x, 0);
+    EXPECT_DOUBLE_EQ(ecs.GetComponent<Position>(1).y, 0);
+
+    EXPECT_DOUBLE_EQ(ecs.GetComponent<Position>(2).x, 5);
+    EXPECT_DOUBLE_EQ(ecs.GetComponent<Position>(2).y, 6);
 }
 
 TEST_F(ECSTest, EntityManipulation)
@@ -555,7 +572,7 @@ TEST_F(ComponentManagerTest, DifferentPoolSizes)
     compM.RegisterComponentPool<Rotation>(10);
     
 
-    for(ComponentPoolId id = 0; id < 20; id++)
+    for(ComponentId id = 0; id < 20; id++)
     {
         EXPECT_NO_THROW(compM.AddComponent<Position>(id * 10));
         if(id % 2 == 0)
@@ -564,4 +581,22 @@ TEST_F(ComponentManagerTest, DifferentPoolSizes)
 
     EXPECT_ANY_THROW(compM.AddComponent<Position>(2));
     EXPECT_ANY_THROW(compM.AddComponent<Rotation>(1));
+}
+
+TEST_F(ComponentManagerTest, CreateComponentWithArgs)
+{
+    ComponentManager compM;
+    compM.RegisterComponentPool<Position>();
+    compM.AddComponent<Position>(0, 2, 3);
+    compM.AddComponent<Position>(1);
+    compM.AddComponent<Position>(2, 5, 6);
+    
+    EXPECT_DOUBLE_EQ(compM.GetComponent<Position>(0).x, 2);
+    EXPECT_DOUBLE_EQ(compM.GetComponent<Position>(0).y, 3);
+    
+    EXPECT_DOUBLE_EQ(compM.GetComponent<Position>(1).x, 0);
+    EXPECT_DOUBLE_EQ(compM.GetComponent<Position>(1).y, 0);
+
+    EXPECT_DOUBLE_EQ(compM.GetComponent<Position>(2).x, 5);
+    EXPECT_DOUBLE_EQ(compM.GetComponent<Position>(2).y, 6);
 }

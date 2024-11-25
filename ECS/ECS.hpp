@@ -23,7 +23,7 @@ public:
     }
 
     template <typename Component>
-    void RegisterComponentPool(ComponentPoolId MAX_SIZE = MAX_ENTITY_COUNT)
+    void RegisterComponentPool(ComponentId MAX_SIZE = MAX_ENTITY_COUNT)
     {
         compManager.RegisterComponentPool<Component>(MAX_SIZE);
     }
@@ -42,10 +42,10 @@ public:
         return compManager.GetComponent<Component>(entity);
     }
 
-    template <typename Component>
-    Component& AddComponent(const EntityId entity)
+    template <typename Component, typename... ARGS>
+    Component& AddComponent(const EntityId entity, ARGS&&... args)
     {
-        auto& comp = compManager.AddComponent<Component>(entity);
+        auto& comp = compManager.AddComponent<Component>(entity, args...);
         signatures[entity].set(compManager.CompId<Component>());
         for(SystemId sysId = 0; sysId < numberOfSystems; sysId++)
             systems[sysId]->OnEntitySignatureChanged(entity, signatures[entity]);
