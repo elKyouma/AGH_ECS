@@ -3,6 +3,7 @@
 #include <optional>
 #include <stack>
 #include <unordered_map>
+#include <vector>
 #include "Types.hpp"
 
 class IComponentPool
@@ -18,19 +19,19 @@ class ComponentPool : public IComponentPool
 private:
     //TODO: Think about supporting different types provided by the user
     //TODO: Think about invalid debug onlny value
-    using ComponentId = uint32_t;
 
 public:
 
-    ComponentPool()
+    ComponentPool(ComponentId MAX_SIZE = MAX_ENTITY_COUNT)
     {
-        for(ComponentId id = MAX_ENTITY_COUNT; id > 0; id--)
+        components.resize(MAX_SIZE);
+        for(ComponentId id = MAX_SIZE; id > 0; id--)
             availableIds.push(id - 1);
     }
 
     Component& AddComponent(const EntityId entity)
     {
-        ASSERT(entityToComponentId.find(entity) == entityToComponentId.end());
+        ASSERT(availableIds.size() > 0 && entityToComponentId.find(entity) == entityToComponentId.end());
 
         entityToComponentId[entity] = availableIds.top();
         availableIds.pop();
@@ -90,7 +91,7 @@ public:
     Component& operator[] (const EntityId entity);
 
 private:
-    std::array<Component, MAX_ENTITY_COUNT> components;
+    std::vector<Component> components;
     std::unordered_map<EntityId, ComponentId> entityToComponentId;
     std::stack<ComponentId> availableIds; 
     //TODO: check is it really a good idea    

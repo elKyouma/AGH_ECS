@@ -16,4 +16,5 @@ constexpr static uint32_t MAX_SYSTEM_COUNT = 100;
 using ComponentPoolId = uint32_t;
 using EntityId = uint32_t;
 using SystemId = uint32_t;    
+using ComponentId = uint32_t;
 using Signature = std::bitset<MAX_COMPONENT_COUNT>;

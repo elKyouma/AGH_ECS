@@ -30,11 +30,11 @@ public:
     }
     
     template <typename Component>
-    void RegisterComponentPool()
+    void RegisterComponentPool(ComponentPoolId MAX_SIZE = MAX_ENTITY_COUNT)
     {
         ASSERT(typeToCompId.find(std::type_index(typeid(Component))) == typeToCompId.end());
         typeToCompId[std::type_index(typeid(Component))] = numberOfComponentPools;
-        components[numberOfComponentPools] = std::make_unique<ComponentPool<Component>>();
+        components[numberOfComponentPools] = std::make_unique<ComponentPool<Component>>(MAX_SIZE);
         numberOfComponentPools++;
     }
 

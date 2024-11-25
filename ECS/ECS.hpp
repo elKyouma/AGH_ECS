@@ -23,9 +23,9 @@ public:
     }
 
     template <typename Component>
-    void RegisterComponentPool()
+    void RegisterComponentPool(ComponentPoolId MAX_SIZE = MAX_ENTITY_COUNT)
     {
-        compManager.RegisterComponentPool<Component>();
+        compManager.RegisterComponentPool<Component>(MAX_SIZE);
     }
 
     template <typename Component>
