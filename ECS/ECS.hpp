@@ -78,12 +78,25 @@ public:
     template<typename Component, typename... ARGS>
     void AddComponents(std::span<EntityId> entities, ARGS&&... args)
     {
+        for(const auto ent : entities)
+        {    
+            signatures[ent].set(compManager.CompId<Component>());
+            for(SystemId sysId = 0; sysId < numberOfSystems; sysId++)
+                systems[sysId]->OnEntitySignatureChanged(ent, signatures[ent]);
+        }
         compManager.AddComponents<Component>(entities, args...);
     }
 
     template<typename Component>
     void DeleteComponents(std::span<EntityId> entities)
-    {
+    { 
+        for(const auto ent : entities)
+        {   
+            signatures[ent].reset(compManager.CompId<Component>());
+            for(SystemId sysId = 0; sysId < numberOfSystems; sysId++)
+                systems[sysId]->OnEntitySignatureChanged(ent, signatures[ent]);
+        }
+
         compManager.DeleteComponents<Component>(entities);
     }
 

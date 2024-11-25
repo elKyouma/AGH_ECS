@@ -332,26 +332,27 @@ TEST_F(ECSTest, CustomPoolSizesTest)
 TEST_F(ECSTest, CreateComponentWithArgs)
 {
     ECS ecs;
+    auto ent1 = ecs.CreateEntity();
+    auto ent2 = ecs.CreateEntity();
+    auto ent3 = ecs.CreateEntity();
     ecs.RegisterComponentPool<Position>();
-    ecs.AddComponent<Position>(0, 2, 3);
-    ecs.AddComponent<Position>(1);
-    ecs.AddComponent<Position>(2, 5, 6);
+    ecs.AddComponent<Position>(ent1, 2, 3);
+    ecs.AddComponent<Position>(ent2);
+    ecs.AddComponent<Position>(ent3, 5, 6);
     
-    EXPECT_DOUBLE_EQ(ecs.GetComponent<Position>(0).x, 2);
-    EXPECT_DOUBLE_EQ(ecs.GetComponent<Position>(0).y, 3);
+    EXPECT_DOUBLE_EQ(ecs.GetComponent<Position>(ent1).x, 2);
+    EXPECT_DOUBLE_EQ(ecs.GetComponent<Position>(ent1).y, 3);
     
-    EXPECT_DOUBLE_EQ(ecs.GetComponent<Position>(1).x, 0);
-    EXPECT_DOUBLE_EQ(ecs.GetComponent<Position>(1).y, 0);
+    EXPECT_DOUBLE_EQ(ecs.GetComponent<Position>(ent2).x, 0);
+    EXPECT_DOUBLE_EQ(ecs.GetComponent<Position>(ent2).y, 0);
 
-    EXPECT_DOUBLE_EQ(ecs.GetComponent<Position>(2).x, 5);
-    EXPECT_DOUBLE_EQ(ecs.GetComponent<Position>(2).y, 6);
+    EXPECT_DOUBLE_EQ(ecs.GetComponent<Position>(ent3).x, 5);
+    EXPECT_DOUBLE_EQ(ecs.GetComponent<Position>(ent3).y, 6);
     
-    std::array<EntityId, 90> ents;
-    for(int id = 0; id < 90; id++)
-        ents[id] = id + 4;
+    auto ents = CreateEntitiesArray(ecs, 90);
     ecs.AddComponents<Position>(std::span(ents.begin(), ents.end()), 9, 7);
 
-    for(EntityId ent = 4; ent < 94; ent++)
+    for(const auto ent : ents)
     {
         EXPECT_DOUBLE_EQ(ecs.GetComponent<Position>(ent).x, 9);
         EXPECT_DOUBLE_EQ(ecs.GetComponent<Position>(ent).y, 7);
