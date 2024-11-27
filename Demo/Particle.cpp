@@ -1,11 +1,12 @@
 #include "Particle.hpp"
+#include "Renderable.hpp"
 #include "SDL3/SDL_rect.h"
 #include "SDL3/SDL_render.h"
 #include "SDL3_image/SDL_image.h"
 #include "Utils.hpp"
 
 Particle::Particle(float startPosX, float startPosY, SDL_Texture* texture, SDL_Renderer* renderer)
-    : posX(startPosX), posY(startPosY), texture(texture), renderer(renderer) 
+    : Renderable(renderer), posX(startPosX), posY(startPosY), texture(texture)  
 {
     timer.Reset();
     velX = Rand(-5.0, 5.0);
