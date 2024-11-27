@@ -4,6 +4,7 @@
 #include "SDL3/SDL_render.h"
 #include "SDL3_image/SDL_image.h"
 #include "Utils.hpp"
+#include <cstdint>
 
 Particle::Particle(float startPosX, float startPosY, SDL_Texture* texture, SDL_Renderer* renderer)
     : Renderable(renderer), posX(startPosX), posY(startPosY), texture(texture)  
@@ -36,6 +37,10 @@ void Particle::Render()
     rect.y = posY + HEIGHT / 2.0 - 50; 
     rect.w = 10; 
     rect.h = 10;
-
+    
+    int g;
+    g = TTL + 105;
+    /*if(g < 0) g = 0;*/
+    SDL_SetTextureColorMod(texture, 255, g, 0);
     SDL_RenderTexture(renderer, texture, NULL, &rect);
 }
