@@ -4,6 +4,7 @@
 #include <stack>
 #include <typeindex>
 #include <unordered_map>
+#include <utility>
 
 #include "ComponentManager.hpp"
 #include "Types.hpp"
@@ -12,13 +13,13 @@
 class ECS
 {
 public:
-    template <typename System>
-    void RegisterSystem()
+    template <typename System, typename... ARGS>
+    void RegisterSystem(ARGS... args)
     {
         ASSERT(typeToSysId.find(std::type_index(typeid(System))) == typeToSysId.end());
         
         typeToSysId[std::type_index(typeid(System))] = numberOfSystems;
-        systems[numberOfSystems] = std::make_unique<System>();
+        systems[numberOfSystems] = std::make_unique<System>(std::forward<ARGS>(args) ...);
         systems[numberOfSystems]->Init(signatures, &compManager);
         numberOfSystems++;
     }
