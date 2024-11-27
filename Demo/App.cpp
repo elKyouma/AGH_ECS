@@ -1,9 +1,11 @@
 #include "App.hpp"
 #include "Components.hpp"
+#include "SDL3/SDL_blendmode.h"
 #include "SDL3/SDL_rect.h"
 #include "SDL3/SDL_render.h"
 #include "Systems/Gravity.hpp"
 #include "Systems/Motion.hpp"
+#include "Systems/SpriteColorizer.hpp"
 #include "Utils.hpp"
 #include <SDL3/SDL.h>
 #include <chrono>
@@ -41,18 +43,18 @@ void App::Initialise()
     
     ecs.RegisterComponentPool<Position>();
     ecs.RegisterComponentPool<Velocity>();
+    ecs.RegisterComponentPool<Color>();
+    ecs.RegisterComponentPool<Image>();
     ecs.RegisterComponentPool<Mass>();
     
     particles.resize(200);
     for(size_t i = 0; i < 200; i++)
     {    
         particles[i] = ecs.CreateEntity();
-        ecs.AddComponent<Mass>(particles[i]).mass = 5;
-
-        auto& pos = ecs.AddComponent<Position>(particles[i]);
-        pos.x = 100;
-        pos.y = 100;
-
+        ecs.AddComponent<Mass>(particles[i], 5);
+        ecs.AddComponent<Image>(particles[i], texture, SDL_BLENDMODE_ADD);
+        ecs.AddComponent<Color>(particles[i], SDL_Color{255,100,60,120});
+        ecs.AddComponent<Position>(particles[i], 100, 100);
         auto& vel = ecs.AddComponent<Velocity>(particles[i]);
         vel.vel_x = (2.0*rand() / RAND_MAX - 1) * 40;
         vel.vel_y = (1.0*rand() / RAND_MAX + 1.0) * 40;
@@ -60,6 +62,7 @@ void App::Initialise()
     
     ecs.RegisterSystem<Motion>();
     ecs.RegisterSystem<Gravity>();
+    ecs.RegisterSystem<SpriteColorizer>(renderer);
 }
 
 void App::Clean()
@@ -93,20 +96,6 @@ void App::Render()
 {
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0x00);
 	SDL_RenderClear(renderer);
-    
-    for(const auto ent : particles)
-    {
-        SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-        auto& pos = ecs.GetComponent<Position>(ent);
-        SDL_FRect particleRect{
-            pos.x - 10,
-            (200 - pos.y) - 10,
-            20,
-            20
-        };
-
-	    SDL_RenderTexture(renderer, texture, NULL, &particleRect);
-    }
-
+    ecs.RenderSystems();    
     SDL_RenderPresent(renderer);
 }

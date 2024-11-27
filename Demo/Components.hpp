@@ -1,4 +1,5 @@
 #pragma once
+#include "SDL3/SDL_blendmode.h"
 #include "SDL3/SDL_render.h"
 
 struct Position
@@ -24,6 +25,7 @@ struct Color
 struct Image
 {
     SDL_Texture* texture = nullptr;
+    SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
 };
 
 struct AnimationSheet
