@@ -1,5 +1,7 @@
 #pragma once
+#include <functional>
 #include <memory>
+#include <optional>
 #include <span>
 #include <stack>
 #include <typeindex>
@@ -42,6 +44,18 @@ public:
     {
         ASSERT(signatures[entity].test(compManager.CompId<Component>()));
         return compManager.GetComponent<Component>(entity);
+    }
+
+    template <typename Component>
+    std::optional<std::reference_wrapper<Component>> TryGetComponent(const EntityId entity)
+    {
+        return compManager.TryGetComponent<Component>(entity);
+    }
+    
+    template <typename Component>
+    std::optional<std::reference_wrapper<const Component>> TryGetComponent(const EntityId entity) const
+    {
+        return compManager.TryGetComponent<Component>(entity);
     }
 
     template <typename Component, typename... ARGS>

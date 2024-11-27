@@ -1,6 +1,8 @@
 #pragma once
 #include <array>
+#include <functional>
 #include <memory>
+#include <optional>
 #include <span>
 #include <typeindex>
 #include "Component.hpp"
@@ -53,6 +55,20 @@ public:
     {
         const auto& comp = GetComponentPool<Component>(); 
         return comp.GetComponent(entity);
+    }
+
+    template <typename Component>
+    std::optional<std::reference_wrapper<Component>> TryGetComponent(const EntityId entity)
+    {
+        auto& comp = GetComponentPool<Component>();
+        return comp.TryGetComponent(entity);
+    }
+    
+    template <typename Component>
+    std::optional<std::reference_wrapper<const Component>> TryGetComponent(const EntityId entity) const
+    {
+        const auto& comp = GetComponentPool<Component>(); 
+        return comp.TryGetComponent(entity);
     }
 
     template <typename Component, typename... ARGS>
