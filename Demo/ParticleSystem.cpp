@@ -1,6 +1,8 @@
 #include "ParticleSystem.hpp"
+#include "Particle.hpp"
 #include "Utils.hpp"
 #include <cmath>
+#include <memory>
 #include <vector>
 
 void ParticleSystem::Init()
@@ -14,29 +16,29 @@ void ParticleSystem::Init()
         float r = Rand(0.0, 50.0);
         float fi = Rand(0.0, 359.0);
 
-        particles.emplace_back(
+        particles.push_back(std::make_unique<Particle>(
             r * std::cos(fi), 
             400.0 + r * std::sin(fi), 
-            particleTexture, renderer);
+            particleTexture, renderer));
     }
 }
 
 void ParticleSystem::Update()
 {
     for(auto& particle : particles)
-        particle.Update();
+        particle->Update();
     for (int i = 0; i < particles.size(); i++) 
     {
-        if (particles[i].TTL <= 0)
+        if (dynamic_cast<Particle*>(particles[i].get())->TTL <= 0)
         {
             float r = Rand(0.0, 50.0);
             float fi = Rand(0.0, 359.0);
             
             particles.erase(particles.begin() + i);
-            particles.emplace_back(
-            r * std::cos(fi), 
-            400.0 + r * std::sin(fi), 
-            particleTexture, renderer);
+            particles.push_back(std::make_unique<Particle>(
+                r * std::cos(fi), 
+                400.0 + r * std::sin(fi), 
+                particleTexture, renderer));
         }
     }
 }
@@ -44,7 +46,7 @@ void ParticleSystem::Update()
 void ParticleSystem::Render()
 {
     for(auto& particle : particles)
-        particle.Render();
+        dynamic_cast<Particle*>(particle.get())->Render();
 }
 
 void ParticleSystem::Clean()
