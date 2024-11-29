@@ -122,6 +122,7 @@ public:
     }
 
     ECS();
+    ~ECS();
 
     EntityId CreateEntity();
     void DestroyEntity(const EntityId entity);
@@ -136,5 +137,5 @@ private:
     ComponentManager compManager{};
 
     std::stack<EntityId> availableEntityIds;
-    std::array<Signature, MAX_ENTITY_COUNT> signatures;
+    Signature* signatures;
 };

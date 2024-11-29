@@ -1,9 +1,16 @@
 #include "ECS.hpp"
+#include "Types.hpp"
 
 ECS::ECS()
 {
+    signatures = new Signature[MAX_ENTITY_COUNT];
     for(EntityId id = MAX_ENTITY_COUNT; id > 0; id--)
         availableEntityIds.push(id - 1);
+}
+
+ECS::~ECS()
+{
+    delete [] signatures;
 }
 
 EntityId ECS::CreateEntity()

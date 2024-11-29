@@ -194,9 +194,9 @@ protected:
 TEST_F(SystemTest, SystemInitialization)
 {
     EmptySys sys1;
-    EXPECT_ANY_THROW(sys1.Init(signatures, &compManager));
+    EXPECT_ANY_THROW(sys1.Init(signatures.data(), &compManager));
     DummySys2 sys2;
-    sys2.Init(signatures, &compManager);
+    sys2.Init(signatures.data(), &compManager);
 
     EXPECT_EQ(sys2.EntitySize(), 1) << "Wrong entity count";
     EXPECT_TRUE(sys2.CheckIfEntitySubscribed(0)) << "Entity with right signature unsubscribed";
@@ -207,7 +207,7 @@ TEST_F(SystemTest, SystemInitialization)
 TEST_F(SystemTest, ChangingEntitySignature)
 {
     DummySys2 sys;
-    sys.Init(signatures, &compManager);
+    sys.Init(signatures.data(), &compManager);
 
     signatures[1].set(typeToId[std::type_index(typeid(Position))]);
     sys.OnEntitySignatureChanged(1, signatures[1]);
@@ -226,7 +226,7 @@ TEST_F(SystemTest, ChangingEntitySignature)
 TEST_F(SystemTest, DeletingEntity)
 {
     DummySys2 sys;
-    sys.Init(signatures, &compManager);
+    sys.Init(signatures.data(), &compManager);
     EXPECT_ANY_THROW(sys.OnEntityDestroyed(2)) << "Deleted non-existent entity";
 
     sys.OnEntityDestroyed(0);

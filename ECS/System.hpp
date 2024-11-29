@@ -7,7 +7,7 @@
 class System
 {
 public:
-    void Init(std::array<Signature, MAX_ENTITY_COUNT>& signatures,
+    void Init(Signature *signatures,
               ComponentManager* compManager)
     {
         this->compManager = compManager;
