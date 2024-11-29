@@ -34,3 +34,9 @@ struct AnimationSheet
     int grid_x;
     int grid_y;
 };
+
+struct LifeTime
+{
+    float maxLifeTime = 1.0;
+    float remainingLifeTime = maxLifeTime;
+};

@@ -19,11 +19,16 @@ public:
 private:
     void Initialise();
     void Clean();
+    void AddNewParticle(size_t i);
+    void UpdateParticles();
 
 	SDL_Texture* texture;
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 	SDL_Event event;
+
+    double reloadTime = 1.0 * 5.0 / 300;
+    double timer = reloadTime;
 
     double deltaTime;
     std::chrono::time_point<std::chrono::high_resolution_clock> prevFrameStart{std::chrono::high_resolution_clock::now()};

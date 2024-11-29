@@ -94,6 +94,6 @@ private:
     std::vector<Component> components;
     std::unordered_map<EntityId, ComponentId> entityToComponentId;
     std::stack<ComponentId> availableIds; 
-    //TODO: check is it really a good idea    
+    //TODO: check is it really a good idea
 };
 

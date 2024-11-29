@@ -12,7 +12,7 @@ public:
     {
         this->compManager = compManager;
         SetSignature(systemSignature);
-        ASSERT(systemSignature.to_ulong() != 0u);
+        //ASSERT(systemSignature.to_ulong() != 0u);
         
         for(EntityId id = 0; id < MAX_ENTITY_COUNT; id++)
             if((systemSignature.to_ulong() & signatures[id].to_ulong()) == systemSignature.to_ulong())

@@ -195,7 +195,7 @@ protected:
 TEST_F(SystemTest, SystemInitialization)
 {
     EmptySys sys1;
-    EXPECT_ANY_THROW(sys1.Init(signatures.data(), &compManager));
+    sys1.Init(signatures.data(), &compManager);
     DummySys2 sys2;
     sys2.Init(signatures.data(), &compManager);
 

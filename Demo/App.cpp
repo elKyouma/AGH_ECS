@@ -1,11 +1,14 @@
 #include "App.hpp"
 #include "Components.hpp"
 #include "SDL3/SDL_blendmode.h"
+#include "SDL3/SDL_pixels.h"
 #include "SDL3/SDL_rect.h"
 #include "SDL3/SDL_render.h"
+#include "SDL3/SDL_stdinc.h"
 #include "Systems/Gravity.hpp"
 #include "Systems/Motion.hpp"
 #include "Systems/SpriteColorizer.hpp"
+#include "Types.hpp"
 #include "Utils.hpp"
 #include <SDL3/SDL.h>
 #include <chrono>
@@ -13,6 +16,8 @@
 #include <cstddef>
 #include <cstdlib>
 #include <ctime>
+#include <execution>
+#include <filesystem>
 #include <string>
 
 
@@ -34,6 +39,27 @@ App::~App()
 	SDL_Quit();
 }
 
+    
+void App::AddNewParticle(size_t i)
+{
+    particles[i] = ecs.CreateEntity();
+    ecs.AddComponent<Mass>(particles[i], 0);
+    ecs.AddComponent<LifeTime>(particles[i], 1, 1);
+    ecs.AddComponent<Image>(particles[i], texture, SDL_BLENDMODE_ADD);
+    ecs.AddComponent<Color>(particles[i], SDL_Color{255,100,60,120});
+    ecs.AddComponent<Position>(particles[i], 130 + 20*(2.0*rand() / RAND_MAX - 1), 20);
+    
+
+    auto& vel = ecs.AddComponent<Velocity>(particles[i]);
+    float speed = 75 + 40 * (2.0*rand() / RAND_MAX -1);
+
+    vel.vel_x = (2.0*rand() / RAND_MAX - 1) / 2;
+    vel.vel_y = 1;
+    const auto max = sqrt(vel.vel_x * vel.vel_x + vel.vel_y * vel.vel_y);
+    vel.vel_x *= speed / max;
+    vel.vel_y *= speed / max;
+}
+
 void App::Initialise()
 {
     srand(time(0));
@@ -44,22 +70,12 @@ void App::Initialise()
     ecs.RegisterComponentPool<Position>();
     ecs.RegisterComponentPool<Velocity>();
     ecs.RegisterComponentPool<Color>();
+    ecs.RegisterComponentPool<LifeTime>();
     ecs.RegisterComponentPool<Image>();
     ecs.RegisterComponentPool<Mass>();
     
-    particles.resize(200);
-    for(size_t i = 0; i < 200; i++)
-    {    
-        particles[i] = ecs.CreateEntity();
-        ecs.AddComponent<Mass>(particles[i], 5);
-        ecs.AddComponent<Image>(particles[i], texture, SDL_BLENDMODE_ADD);
-        ecs.AddComponent<Color>(particles[i], SDL_Color{255,100,60,120});
-        ecs.AddComponent<Position>(particles[i], 100, 100);
-        auto& vel = ecs.AddComponent<Velocity>(particles[i]);
-        vel.vel_x = (2.0*rand() / RAND_MAX - 1) * 40;
-        vel.vel_y = (1.0*rand() / RAND_MAX + 1.0) * 40;
-    }
-    
+    particles.reserve(300);
+
     ecs.RegisterSystem<Motion>();
     ecs.RegisterSystem<Gravity>();
     ecs.RegisterSystem<SpriteColorizer>(renderer);
@@ -81,6 +97,27 @@ bool App::ProcessInputs()
     return isQuiting;
 }
 
+void App::UpdateParticles()
+{
+    for(size_t i = 0; i < particles.size(); i++)
+    {
+        auto& lifetime = ecs.GetComponent<LifeTime>(particles[i]);
+        lifetime.remainingLifeTime -= deltaTime;
+        if(lifetime.remainingLifeTime < 0)
+        {    
+            ecs.DestroyEntity(particles[i]);
+            AddNewParticle(i);
+        }
+    
+        float progress = lifetime.remainingLifeTime / lifetime.maxLifeTime;
+        SDL_Color color = SDL_Color{Uint8(255 * progress),
+                    Uint8(100 * progress/2 + 50),
+                    Uint8(60 * progress/2 + 50),
+                    Uint8(170 * progress)};
+        ecs.GetComponent<Color>(particles[i]).color = color;
+    }
+}
+
 void App::Update()
 {
     {
@@ -89,6 +126,23 @@ void App::Update()
         prevFrameStart = now;
     }
     
+    timer -= deltaTime;
+
+    if(timer < 0)
+    {
+        timer = reloadTime;
+        if(particles.size() != particles.capacity())
+        {   
+            for(int i = 0; i < 5; i++)
+            {
+                particles.push_back(0);
+                AddNewParticle(particles.size()-1);
+            }
+        }
+    }
+
+    UpdateParticles();
+
     ecs.UpdateSystems(deltaTime);
 }
 
